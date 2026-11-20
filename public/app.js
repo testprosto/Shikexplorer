@@ -211,22 +211,27 @@ function makeFamilyTree(selected, full){
     const node={...e.candidate,relationLabel:e.label,evidence:e.context};
     if(type==='parent')groups.parent.push(node);else if(type==='sibling')groups.sibling.push(node);else if(type==='partner')groups.partner.push(node);else if(type==='child')groups.child.push(node);else groups.other.push(node);
   }
-  // Add explicit family links from Anime Characters Database (ACDB), a second source.
+  // Add explicit family links from external sources: ACDB and Wikidata.
+  const poolList=[...pool.values()];
+  const findInPool=(name)=>{const n=normName(name);return n?poolList.find(x=>normName(x.name)===n||normName(x.russian)===n):null;};
   for (const rel of state.acdbRelations || []) {
     const type = rel.side || rel.kind;
     const groupKey = ['parent','child','sibling','partner','other'].includes(type) ? type : null;
     if (!groupKey) continue;
-    const same = [...pool.values()].find(x => normName(x.russian || x.name) === normName(rel.name));
-    const node = same ? { ...same, acdbId: rel.id, external: true } : {
-      id: null, acdbId: rel.id, external: true, name: rel.name, russian: rel.name,
-      image: rel.image || '', url: rel.url
-    };
-    const label = acdbRelationLabel(rel.label, rel.side, rel.kind);
+    const isWikidata = rel.source === 'wikidata';
+    const same = findInPool(rel.name);
+    if (same && String(same.id) === String(selected.id)) continue;
     const key = `${rel.id}:${groupKey}`;
-    if (unique.has(key)) continue;
-    unique.add(key);
-    node.relationLabel = label;
-    node.evidence = `ACDB: ${rel.label}`;
+    const nameKey = `n:${normName(rel.name)}:${groupKey}`;
+    if (unique.has(key) || unique.has(nameKey)) continue;
+    unique.add(key); unique.add(nameKey);
+    const node = same
+      ? (isWikidata ? { ...same } : { ...same, acdbId: rel.id, external: true })
+      : (isWikidata
+          ? { id: null, external: true, name: rel.name, russian: rel.name, image: rel.image || '', wikidataUrl: rel.url }
+          : { id: null, acdbId: rel.id, external: true, name: rel.name, russian: rel.name, image: rel.image || '', url: rel.url });
+    node.relationLabel = isWikidata ? rel.label : acdbRelationLabel(rel.label, rel.side, rel.kind);
+    node.evidence = `${isWikidata ? 'Wikidata' : 'ACDB'}: ${rel.label}`;
     groups[groupKey].push(node);
   }
   // If no explicit family references were found, show the linked character references separately rather than inventing a kinship.
@@ -249,14 +254,14 @@ function acdbRelationLabel(label='', side='', kind=''){
   return 'Родственник';
 }
 function familyCard(c, relation){
-  const attrs = c.acdbId ? `data-acdb-id="${esc(c.acdbId)}"` : `data-family-id="${esc(c.id)}"`;
+  const attrs = c.wikidataUrl ? `data-ext-url="${esc(c.wikidataUrl)}"` : c.acdbId ? `data-acdb-id="${esc(c.acdbId)}"` : `data-family-id="${esc(c.id)}"`;
   return `<button class="family-node" type="button" ${attrs}><img src="${esc(imageUrl(c.image,'preview')||fallback)}" onerror="this.src='${fallback}'" alt=""><span class="family-node-text"><strong>${esc(c.russian||c.name||'Персонаж')}</strong><small>${esc(relation)}</small></span></button>`;
 }
 function renderFamilyTree(selected, full){
   const tree=makeFamilyTree(selected,full);const g=tree.groups;
   const group=(title,items,relation,cls)=>`<section class="family-group ${cls}"><div class="family-group-title">${title}<span>${items.length}</span></div><div class="family-nodes">${items.map(c=>familyCard(c,c.relationLabel||relation)).join('')||'<div class="family-empty">Нет подтверждённых данных</div>'}</div></section>`;
   const mentions=tree.mentioned.filter(c=>!Object.values(g).flat().some(x=>String(x.id)===String(c.id)));
-  return `<section class="family-tree-wrap"><div class="family-tree-heading"><div><div class="eyebrow">CHARACTER RELATIONSHIP MAP</div><h3>Семейное дерево персонажа</h3></div><span class="tree-source">Shikimori · вся франшиза + ACDB</span></div><div class="family-tree"><div class="tree-top">${group('РОДИТЕЛИ',g.parent,'Родитель','parents')}</div><div class="tree-middle"><div class="tree-side left">${group('БРАТЬЯ И СЁСТРЫ',g.sibling,'Брат / сестра','siblings')}</div><div class="tree-center"><div class="tree-line vertical"></div><div class="family-main"><img src="${esc(imageUrl(full.image||selected.image,'original')||fallback)}" onerror="this.src='${fallback}'" alt=""><strong>${esc(full.russian||selected.russian||full.name||selected.name)}</strong><small>ВЫБРАННЫЙ ПЕРСОНАЖ</small></div></div><div class="tree-side right">${group('СУПРУГИ / ПАРТНЁРЫ',g.partner,'Супруг / супруга','partners')}</div></div><div class="tree-bottom">${group('ДЕТИ',g.child,'Сын / дочь','children')}${group('ДРУГИЕ РОДСТВЕННИКИ',g.other,'Родственник','relatives')}${mentions.length?group('УПОМЯНУТЫ В ОПИСАНИИ',mentions,'Упоминание','mentions'):''}</div></div><p class="tree-disclaimer">Связи собираются из Shikimori и Anime Characters Database (ACDB). ACDB — пользовательская база, поэтому возможны ошибки, разные версии персонажа и неполные данные. Открывай источник, чтобы проверить каждую связь.</p></section>`;
+  return `<section class="family-tree-wrap"><div class="family-tree-heading"><div><div class="eyebrow">CHARACTER RELATIONSHIP MAP</div><h3>Семейное дерево персонажа</h3></div><span class="tree-source">Shikimori · вся франшиза + ACDB + Wikidata</span></div><div class="family-tree"><div class="tree-top">${group('РОДИТЕЛИ',g.parent,'Родитель','parents')}</div><div class="tree-middle"><div class="tree-side left">${group('БРАТЬЯ И СЁСТРЫ',g.sibling,'Брат / сестра','siblings')}</div><div class="tree-center"><div class="tree-line vertical"></div><div class="family-main"><img src="${esc(imageUrl(full.image||selected.image,'original')||fallback)}" onerror="this.src='${fallback}'" alt=""><strong>${esc(full.russian||selected.russian||full.name||selected.name)}</strong><small>ВЫБРАННЫЙ ПЕРСОНАЖ</small></div></div><div class="tree-side right">${group('СУПРУГИ / ПАРТНЁРЫ',g.partner,'Супруг / супруга','partners')}</div></div><div class="tree-bottom">${group('ДЕТИ',g.child,'Сын / дочь','children')}${group('ДРУГИЕ РОДСТВЕННИКИ',g.other,'Родственник','relatives')}${mentions.length?group('УПОМЯНУТЫ В ОПИСАНИИ',mentions,'Упоминание','mentions'):''}</div></div><p class="tree-disclaimer">Связи собираются из Shikimori и Anime Characters Database (ACDB). ACDB — пользовательская база, поэтому возможны ошибки, разные версии персонажа и неполные данные. Открывай источник, чтобы проверить каждую связь.</p></section>`;
 }
 async function loadRosterDescriptions(selectedId, selectedFull){
   const roster=[...state.characters,...state.relatedCharacters];
@@ -300,15 +305,29 @@ async function openCharacter(c){
     const external=await api(`/api/acdb-relations?name=${encodeURIComponent(name)}&title=${encodeURIComponent(title)}`);
     if(external.matched){state.acdbRelations=external.relations||[];full.acdbSource=external.character;full.acdbDiagnostics=external.diagnostics||{relationRowsParsed:state.acdbRelations.length};}else{full.acdbDiagnostics={message:external.message||'Персонаж не найден в ACDB',relationRowsParsed:0};}
   }catch(e){full.acdbDiagnostics={error:e.message,relationRowsParsed:0};}
+  // Wikidata: second structured source, independent from ACDB availability.
+  try{
+    const wname=full.name||c.name||'';
+    const wtitle=state.selectedAnime?.name||state.selectedAnime?.russian||'';
+    const wd=await api(`/api/wikidata-relations?name=${encodeURIComponent(wname)}&title=${encodeURIComponent(wtitle)}`);
+    if(wd.matched){
+      const rels=(wd.relations||[]).map(r=>({...r,source:'wikidata'}));
+      state.acdbRelations=[...(state.acdbRelations||[]),...rels];
+      full.wikidataSource=wd.character;
+      full.wikidataDiagnostics={relationsReturned:rels.length};
+    }else{full.wikidataDiagnostics={message:wd.message||'Персонаж не найден в Wikidata',relationsReturned:0};}
+  }catch(e){full.wikidataDiagnostics={error:e.message,relationsReturned:0};}
   renderShikimoriProfile(c,full);
 }
 function renderShikimoriProfile(c,full){
   const desc=plainDescription(full.description||c.description||'Описание отсутствует.');
   const acdb=full.acdbSource;
-  const sourceLinks=`<p><a class="source-link" href="https://shikimori.one${esc(full.url||c.url||`/characters/${c.id}`)}" target="_blank" rel="noreferrer">Страница персонажа на Shikimori ↗</a>${acdb?` · <a class="source-link" href="${esc(acdb.url)}" target="_blank" rel="noreferrer">Связи ACDB ↗</a>`:''}</p>`;
+  const sourceLinks=`<p><a class="source-link" href="https://shikimori.one${esc(full.url||c.url||`/characters/${c.id}`)}" target="_blank" rel="noreferrer">Страница персонажа на Shikimori ↗</a>${acdb?` · <a class="source-link" href="${esc(acdb.url)}" target="_blank" rel="noreferrer">Связи ACDB ↗</a>`:''}${full.wikidataSource?` · <a class="source-link" href="${esc(full.wikidataSource.url)}" target="_blank" rel="noreferrer">Wikidata ↗</a>`:''}</p>`;
   const diag=full.acdbDiagnostics;
   const acdbStatus=diag?`<p class="acdb-status">${diag.error?`ACDB сейчас недоступна — ${esc(diag.error)}. Семейные связи Shikimori продолжают отображаться независимо от ACDB.`:diag.message?`ACDB: ${esc(diag.message)}`:`ACDB: персонаж ${acdb?'найден':'не сопоставлен'}, связей получено: ${Number(diag.relationRowsParsed||0)}.`}</p>`:'';
-  $('#modalContent').innerHTML=`<div class="profile"><img src="${esc(imageUrl(full.image||c.image,'original')||fallback)}" onerror="this.src='${fallback}'" alt=""><div><div class="eyebrow">CHARACTER PROFILE</div><h2 id="modalName">${esc(full.russian||c.russian||full.name||c.name)}</h2><div class="native">${esc(full.name||c.name||'')}</div><p class="description">${esc(desc)}</p>${sourceLinks}${acdbStatus}</div></div>${renderFamilyTree(c,full)}`;
+  const wdiag=full.wikidataDiagnostics;
+  const wdStatus=wdiag?`<p class="acdb-status">${wdiag.error?`Wikidata недоступна — ${esc(wdiag.error)}.`:wdiag.message?`Wikidata: ${esc(wdiag.message)}`:`Wikidata: связей получено: ${Number(wdiag.relationsReturned||0)}.`}</p>`:'';
+  $('#modalContent').innerHTML=`<div class="profile"><img src="${esc(imageUrl(full.image||c.image,'original')||fallback)}" onerror="this.src='${fallback}'" alt=""><div><div class="eyebrow">CHARACTER PROFILE</div><h2 id="modalName">${esc(full.russian||c.russian||full.name||c.name)}</h2><div class="native">${esc(full.name||c.name||'')}</div><p class="description">${esc(desc)}</p>${sourceLinks}${acdbStatus}${wdStatus}</div></div>${renderFamilyTree(c,full)}`;
   bindFamilyTreeClicks();
 }
 function renderExternalProfile(full,data){
@@ -318,6 +337,7 @@ function renderExternalProfile(full,data){
 }
 function bindFamilyTreeClicks(){
   $('#modalContent').querySelectorAll('[data-family-id]').forEach(btn=>btn.addEventListener('click',()=>{const next=state.characters.find(x=>String(x.id)===btn.dataset.familyId)||state.relatedCharacters.find(x=>String(x.id)===btn.dataset.familyId);if(next)openCharacter(next);else api(`/api/character?id=${btn.dataset.familyId}`).then(data=>openCharacter(data.character)).catch(()=>{});}));
+  $('#modalContent').querySelectorAll('[data-ext-url]').forEach(btn=>btn.addEventListener('click',()=>window.open(btn.dataset.extUrl,'_blank','noopener')));
   $('#modalContent').querySelectorAll('[data-acdb-id]').forEach(btn=>btn.addEventListener('click',()=>{
     const acdbId=btn.dataset.acdbId;
     const node=[...state.acdbRelations].find(x=>String(x.id)===String(acdbId));
