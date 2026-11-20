@@ -1,5 +1,5 @@
 const $ = (s) => document.querySelector(s);
-const state = { titles: [], characters: [], selectedAnime: null };
+const state = { titles: [], characters: [], relatedCharacters: [], selectedAnime: null };
 const esc = (v='') => String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const imageUrl = (image, size='preview') => {
   if (!image) return '';
@@ -33,9 +33,114 @@ function renderCharacters(){const q=$('#characterFilter').value.trim().toLowerCa
   list.forEach(c=>{const card=document.createElement('article');card.className='character-card';const role=roleLabel(c.role);card.innerHTML=`<img src="${esc(imageUrl(c.image,'preview')||fallback)}" onerror="this.src='${fallback}'" alt=""><div class="char-info"><h3>${esc(c.russian||c.name||'Неизвестный персонаж')}</h3><p>${esc(c.name||'')}${role?` · ${esc(role)}`:''}</p></div>`;card.addEventListener('click',()=>openCharacter(c));box.append(card)});
 }
 $('#characterFilter').addEventListener('input',renderCharacters);
-async function openCharacter(c){const modal=$('#modal');$('#modalContent').innerHTML=`<div class="profile"><img src="${esc(imageUrl(c.image,'original')||fallback)}" onerror="this.src='${fallback}'" alt=""><div><div class="eyebrow">CHARACTER PROFILE</div><h2 id="modalName">${esc(c.russian||c.name)}</h2><div class="native">${esc(c.name||'')}</div><p class="description">${esc(c.description||'Загружаю подробную информацию...')}</p><div class="source-note">Информация и связи отображаются только в том случае, если они доступны в данных Shikimori.</div><p><a href="https://shikimori.one${esc(c.url||`/characters/${c.id}`)}" target="_blank" rel="noreferrer">Страница персонажа на Shikimori ↗</a></p></div></div>`;modal.classList.remove('hidden');document.body.style.overflow='hidden';
-  try{const data=await api(`/api/character?id=${c.id}`);const full=data.character||c;const desc=full.description||c.description||'Описание отсутствует.';const p=$('#modalContent .description');if(p)p.textContent=desc;const link=$('#modalContent a');if(link)link.href=`https://shikimori.one${full.url||`/characters/${c.id}`}`;}
-  catch(e){const p=$('#modalContent .description');if(p)p.textContent=c.description||'Дополнительные данные не удалось загрузить.'}
+function plainDescription(value=''){
+  return String(value)
+    .replace(/<br\s*\/?\s*>/gi,' ')
+    .replace(/<[^>]+>/g,' ')
+    .replace(/\[character=(\d+)\]([\s\S]*?)\[\/character\]/gi,' $2 ')
+    .replace(/\[(?:b|i|u|url)[^\]]*\]/gi,' ')
+    .replace(/\[\/(?:b|i|u|url)\]/gi,' ')
+    .replace(/&nbsp;/g,' ')
+    .replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&amp;/g,'&')
+    .replace(/\s+/g,' ').trim();
+}
+function relationshipMentions(description, owner, selected){
+  const raw=String(description||''); const out=[];
+  const patterns=[
+    {type:'parent',label:'Отец',re:/\b(отец|папа|father|dad)\b/i},
+    {type:'parent',label:'Мать',re:/\b(мать|мама|mother|mom)\b/i},
+    {type:'parent',label:'Родитель',re:/\b(родител[ьяи]|parents?)\b/i},
+    {type:'sibling',label:'Брат / сестра',re:/\b(брат|сестра|братья|сёстры|сестры|brother|sister|siblings?)\b/i},
+    {type:'child',label:'Сын / дочь',re:/\b(сын|дочь|дочери|сыновья|ребёнок|ребенок|дети|son|daughter|child|children)\b/i},
+    {type:'partner',label:'Супруг / супруга',re:/\b(жена|муж|супруг|супруга|wife|husband|spouse)\b/i},
+    {type:'other',label:'Другой родственник',re:/\b(дед|дедушка|бабушка|внук|внучка|дядя|тётя|тетя|племянник|племянница|кузен|двоюродн|grandfather|grandmother|uncle|aunt|cousin)\b/i}
+  ];
+  const add=(id, context, relation, source)=>{if(id && String(id)!==String(selected.id))out.push({id:String(id),type:relation.type,label:relation.label,context:context.trim(),source});};
+  const classify=(context,before,after,linkedId)=>{
+    const rel=patterns.find(x=>x.re.test(context));if(!rel)return null;
+    if(rel.type==='sibling'||rel.type==='partner'||rel.type==='other')return rel;
+    if(String(owner.id)===String(selected.id)){
+      // In the selected character's own description: "son of [X]" => X is a parent.
+      if(rel.type==='parent' && /\b(?:father|mother|отец|мать)\s+of\s*$/i.test(before))return {...rel,type:'child',label:'Сын / дочь'};
+      if(rel.type==='child' && /\b(?:son|daughter|сын|дочь)\s+of\s*$/i.test(before))return {...rel,type:'parent',label:'Родитель'};
+      return rel;
+    }
+    // In another character's description, the linked mention is the selected character.
+    if(rel.type==='parent' && /\b(?:is|was)\s+(?:the\s+)?(?:father|mother|отец|мать)\b/i.test(after))return {...rel,type:'child',label:'Сын / дочь'};
+    if(rel.type==='child' && /\b(?:son|daughter|сын|дочь)\s+of\s*$/i.test(before))return {...rel,type:'child',label:'Сын / дочь'};
+    if(rel.type==='child')return {...rel,type:'parent',label:'Родитель'};
+    return rel;
+  };
+  const linked=/\[character=(\d+)\]([\s\S]*?)\[\/character\]/gi; let m;
+  while((m=linked.exec(raw))){
+    const beforeRaw=raw.slice(Math.max(0,m.index-100),m.index);const afterRaw=raw.slice(linked.lastIndex,Math.min(raw.length,linked.lastIndex+100));
+    const before=plainDescription(beforeRaw).slice(-100);const after=plainDescription(afterRaw).slice(0,100);const context=plainDescription(beforeRaw+' '+m[2]+' '+afterRaw);
+    const relation=classify(context,before,after,m[1]);
+    if(!relation)continue;
+    if(String(m[1])===String(selected.id) && String(owner.id)!==String(selected.id))add(owner.id,context,relation,'reverse-description-link');
+    else add(m[1],context,relation,'description-link');
+  }
+  const htmlLink=/href=["'][^"']*\/characters\/(\d+)[^"']*["'][^>]*>([\s\S]*?)<\/a>/gi;
+  while((m=htmlLink.exec(raw))){const beforeRaw=raw.slice(Math.max(0,m.index-100),m.index);const afterRaw=raw.slice(htmlLink.lastIndex,Math.min(raw.length,htmlLink.lastIndex+100));const before=plainDescription(beforeRaw).slice(-100);const after=plainDescription(afterRaw).slice(0,100);const context=plainDescription(beforeRaw+' '+m[2]+' '+afterRaw);const relation=classify(context,before,after,m[1]);if(!relation)continue;if(String(m[1])===String(selected.id)&&String(owner.id)!==String(selected.id))add(owner.id,context,relation,'reverse-description-link');else add(m[1],context,relation,'description-link');}
+  return out;
+}
+function classifyRelationEvidence(evidence, ownerId, selectedId){
+  const ctx=(evidence.context||'').toLowerCase();
+  const parentWord=/(отец|папа|father|dad|мать|мама|mother|mom|родител|parent)/i.test(ctx);
+  const childWord=/(сын|дочь|дочери|сыновья|ребёнок|ребенок|дети|son|daughter|child|children)/i.test(ctx);
+  if(evidence.type==='parent') return 'parent';
+  if(evidence.type==='sibling') return 'sibling';
+  if(evidence.type==='partner') return 'partner';
+  if(evidence.type==='other') return 'other';
+  if(evidence.type==='child') return 'child';
+  return parentWord||childWord?'parent':'other';
+}
+function makeFamilyTree(selected, full){
+  const pool=new Map(state.characters.map(c=>[String(c.id),c]));for(const c of state.relatedCharacters)pool.set(String(c.id),c);pool.set(String(selected.id),{...selected,...full});
+  const descriptions=[];
+  for(const c of pool.values()) if(c.description) descriptions.push({owner:c,description:c.description});
+  const evidence=[];
+  for(const item of descriptions){
+    const found=relationshipMentions(item.description,item.owner,selected);
+    for(const e of found){const candidate=pool.get(e.id);if(candidate)evidence.push({...e,candidate,ownerId:String(item.owner.id)});}
+  }
+  // A character's own description can directly link to relatives that are not in the selected title roster.
+  const selectedDesc=full.description||selected.description||'';
+  const linkedIds=[...String(selectedDesc).matchAll(/\[character=(\d+)\]/gi)].map(m=>m[1]);
+  const unique=new Set();
+  const groups={parent:[],sibling:[],partner:[],child:[],other:[]};
+  for(const e of evidence){
+    const id=String(e.candidate.id);if(id===String(selected.id))continue;
+    const type=classifyRelationEvidence(e,e.ownerId,selected.id);
+    const key=`${id}:${type}`;if(unique.has(key))continue;unique.add(key);
+    const node={...e.candidate,relationLabel:e.label,evidence:e.context};
+    if(type==='parent')groups.parent.push(node);else if(type==='sibling')groups.sibling.push(node);else if(type==='partner')groups.partner.push(node);else if(type==='child')groups.child.push(node);else groups.other.push(node);
+  }
+  // If no explicit family references were found, show the linked character references separately rather than inventing a kinship.
+  const mentioned=linkedIds.filter(id=>pool.has(String(id))).map(id=>pool.get(String(id))).filter(c=>String(c.id)!==String(selected.id));
+  return {groups,mentioned,hasEvidence:Object.values(groups).some(a=>a.length>0)};
+}
+function familyCard(c, relation){
+  return `<button class="family-node" type="button" data-family-id="${esc(c.id)}"><img src="${esc(imageUrl(c.image,'preview')||fallback)}" onerror="this.src='${fallback}'" alt=""><span class="family-node-text"><strong>${esc(c.russian||c.name||'Персонаж')}</strong><small>${esc(relation)}</small></span></button>`;
+}
+function renderFamilyTree(selected, full){
+  const tree=makeFamilyTree(selected,full);const g=tree.groups;
+  const group=(title,items,relation,cls)=>`<section class="family-group ${cls}"><div class="family-group-title">${title}<span>${items.length}</span></div><div class="family-nodes">${items.map(c=>familyCard(c,c.relationLabel||relation)).join('')||'<div class="family-empty">Нет подтверждённых данных</div>'}</div></section>`;
+  const mentions=tree.mentioned.filter(c=>!Object.values(g).flat().some(x=>String(x.id)===String(c.id)));
+  return `<section class="family-tree-wrap"><div class="family-tree-heading"><div><div class="eyebrow">CHARACTER RELATIONSHIP MAP</div><h3>Семейное дерево персонажа</h3></div><span class="tree-source">По описаниям Shikimori</span></div><div class="family-tree"><div class="tree-top">${group('РОДИТЕЛИ',g.parent,'Родитель','parents')}</div><div class="tree-middle"><div class="tree-side left">${group('БРАТЬЯ И СЁСТРЫ',g.sibling,'Брат / сестра','siblings')}</div><div class="tree-center"><div class="tree-line vertical"></div><div class="family-main"><img src="${esc(imageUrl(full.image||selected.image,'original')||fallback)}" onerror="this.src='${fallback}'" alt=""><strong>${esc(full.russian||selected.russian||full.name||selected.name)}</strong><small>ВЫБРАННЫЙ ПЕРСОНАЖ</small></div></div><div class="tree-side right">${group('СУПРУГИ / ПАРТНЁРЫ',g.partner,'Супруг / супруга','partners')}</div></div><div class="tree-bottom">${group('ДЕТИ',g.child,'Сын / дочь','children')}${group('ДРУГИЕ РОДСТВЕННИКИ',g.other,'Родственник','relatives')}${mentions.length?group('УПОМЯНУТЫ В ОПИСАНИИ',mentions,'Упоминание','mentions'):''}</div></div><p class="tree-disclaimer">Показываются только связи, которые удалось подтвердить по тексту описаний Shikimori. Если данных нет, ветка остаётся пустой — родство не додумывается.</p></section>`;
+}
+async function openCharacter(c){
+  const modal=$('#modal');modal.classList.remove('hidden');document.body.style.overflow='hidden';
+  $('#modalContent').innerHTML=`<div class="profile-loading"><div class="eyebrow">CHARACTER PROFILE</div><h2>${esc(c.russian||c.name||'Персонаж')}</h2><p>Загружаю описание и семейные связи...</p></div>`;
+  let full=c;
+  try{const data=await api(`/api/character?id=${c.id}`);full=data.character||c;}catch(e){/* roster data remains usable */}
+  // Load directly linked characters too, so a relative outside the selected title's role list can still appear.
+  const linkedIds=[...new Set([...String(full.description||'').matchAll(/\[character=(\d+)\]/gi)].map(m=>m[1]))]
+    .filter(id=>!state.characters.some(x=>String(x.id)===id)&&!state.relatedCharacters.some(x=>String(x.id)===id)&&id!==String(c.id)).slice(0,12);
+  if(linkedIds.length){const extra=await Promise.all(linkedIds.map(id=>api(`/api/character?id=${id}`).catch(()=>null)));for(const item of extra)if(item?.character)state.relatedCharacters.push(item.character);}
+  const desc=plainDescription(full.description||c.description||'Описание отсутствует.');
+  $('#modalContent').innerHTML=`<div class="profile"><img src="${esc(imageUrl(full.image||c.image,'original')||fallback)}" onerror="this.src='${fallback}'" alt=""><div><div class="eyebrow">CHARACTER PROFILE</div><h2 id="modalName">${esc(full.russian||c.russian||full.name||c.name)}</h2><div class="native">${esc(full.name||c.name||'')}</div><p class="description">${esc(desc)}</p><p><a class="source-link" href="https://shikimori.one${esc(full.url||c.url||`/characters/${c.id}`)}" target="_blank" rel="noreferrer">Страница персонажа на Shikimori ↗</a></p></div></div>${renderFamilyTree(c,full)}`;
+  $('#modalContent').querySelectorAll('[data-family-id]').forEach(btn=>btn.addEventListener('click',()=>{const next=state.characters.find(x=>String(x.id)===btn.dataset.familyId);if(next)openCharacter(next);else api(`/api/character?id=${btn.dataset.familyId}`).then(data=>openCharacter(data.character)).catch(()=>{});}));
 }
 function closeModal(){ $('#modal').classList.add('hidden');document.body.style.overflow=''; }
 $('#closeModal').addEventListener('click',closeModal);$('#modal').addEventListener('click',e=>{if(e.target.dataset.close)closeModal()});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
