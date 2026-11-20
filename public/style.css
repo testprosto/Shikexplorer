@@ -8,3 +8,14 @@
 @media(max-width:720px){.modal-card{padding:17px}.family-tree-heading{align-items:flex-start;flex-direction:column}.tree-middle{grid-template-columns:1fr;gap:12px}.tree-center{grid-row:1}.tree-side.left{grid-row:2}.tree-side.right{grid-row:3}.tree-bottom{flex-direction:column}.tree-bottom .family-group{width:100%;flex-basis:auto}.family-node{max-width:100%;flex:1 1 145px}.family-main{width:150px}.family-tree{padding:12px 8px}}
 .tree-top{position:relative;padding-bottom:10px}.tree-top:after{content:"";position:absolute;bottom:0;left:50%;height:10px;border-left:1px solid #9d8ad8aa}.tree-middle{position:relative}.tree-middle:before{content:"";position:absolute;z-index:0;left:16.66%;right:16.66%;top:50%;border-top:1px solid #9d8ad866}.tree-center,.tree-side{position:relative;z-index:1}.tree-center:before{content:"";position:absolute;top:-15px;height:calc(50% + 15px);left:50%;border-left:1px solid #9d8ad866;z-index:-1}.tree-bottom{position:relative;padding-top:10px}.tree-bottom:before{content:"";position:absolute;top:0;left:50%;height:10px;border-left:1px solid #9d8ad866}
 @media(max-width:720px){.tree-middle:before,.tree-center:before,.tree-top:after,.tree-bottom:before{display:none}}
+
+
+/* Franchise-wide title browser */
+.franchise-section{margin:24px 0 30px;padding:20px;border:1px solid var(--line,rgba(255,255,255,.09));border-radius:18px;background:rgba(255,255,255,.025)}
+.franchise-list{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 10px;scrollbar-width:thin}
+.franchise-chip{flex:0 0 220px;min-width:0;text-align:left;display:flex;flex-direction:column;gap:5px;padding:12px 14px;border:1px solid var(--line,rgba(255,255,255,.1));border-radius:13px;background:rgba(255,255,255,.035);color:inherit;cursor:pointer}
+.franchise-chip:hover,.franchise-chip.active{border-color:rgba(144,118,255,.65);background:rgba(144,118,255,.11)}
+.franchise-chip span{font-size:9px;letter-spacing:.12em;color:#a99aff;font-weight:800}
+.franchise-chip strong{font-size:13px;line-height:1.35}
+.franchise-chip small,.char-source-titles{font-size:10px;color:var(--muted,#9b98aa);line-height:1.4}
+.char-source-titles{display:block;margin-top:4px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}

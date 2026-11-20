@@ -1,5 +1,5 @@
 const $ = (s) => document.querySelector(s);
-const state = { titles: [], characters: [], relatedCharacters: [], acdbRelations: [], selectedAnime: null };
+const state = { titles: [], characters: [], relatedCharacters: [], acdbRelations: [], selectedAnime: null, franchiseTitles: [], characterDetails: new Map() };
 const esc = (v='') => String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const imageUrl = (image, size='preview') => {
   if (!image) return '';
@@ -19,18 +19,64 @@ $('#searchForm').addEventListener('submit', async e=>{
   catch(err){status(err.message,true)}finally{$('#searchButton').disabled=false}
 });
 function renderResults(){const box=$('#results');box.innerHTML='';$('#resultCount').textContent=`${state.titles.length} результатов`;
-  state.titles.forEach(a=>{const card=document.createElement('article');card.className='title-card';const img=imageUrl(a.image);card.innerHTML=`<img class="poster" src="${esc(img||fallback)}" onerror="this.src='${fallback}'" alt=""><div class="title-info"><span class="type">${esc(a.kind||'TITLE')} · ${esc(a.status||'')}</span><h3>${esc(a.russian||a.name||'Без названия')}</h3><p>${esc(a.name||'')}</p><p>${esc(a.aired_on?.slice(0,4)||'')} ${a.episodes?`· ${a.episodes} эп.`:''}</p></div>`;card.addEventListener('click',()=>selectAnime(a));box.append(card)});
+  state.titles.forEach(a=>{const card=document.createElement('article');card.className='title-card';const img=imageUrl(a.image);card.innerHTML=`<img class="poster" src="${esc(img||fallback)}" onerror="this.src='${fallback}'" alt=""><div class="title-info"><span class="type">${a.media_type==='manga'?'MANGA':a.media_type==='ranobe'?'RANOBE':'ANIME'} · ${esc(a.kind||'TITLE')} · ${esc(a.status||'')}</span><h3>${esc(a.russian||a.name||'Без названия')}</h3><p>${esc(a.name||'')}</p><p>${esc(a.aired_on?.slice(0,4)||'')} ${a.episodes?`· ${a.episodes} эп.`:''}</p></div>`;card.addEventListener('click',()=>selectAnime(a));box.append(card)});
   $('#resultsSection').classList.remove('hidden');
 }
-async function selectAnime(anime){state.selectedAnime=anime;state.characters=[];$('#resultsSection').classList.add('hidden');$('#titleSection').classList.remove('hidden');$('#titleHero').innerHTML=`<img class="title-poster" src="${esc(imageUrl(anime.image,'original')||fallback)}" onerror="this.src='${fallback}'" alt=""><div><div class="eyebrow">SELECTED TITLE</div><h2 class="title-name">${esc(anime.russian||anime.name)}</h2><div class="title-meta"><span class="pill">${esc(anime.kind||'')}</span><span class="pill">${esc(anime.status||'')}</span><span class="pill">${esc(anime.aired_on?.slice(0,4)||'Год неизвестен')}</span><span class="pill">${anime.episodes||'?'} эпизодов</span><span class="pill">★ ${anime.score||'—'}</span></div><p class="title-description">${esc(anime.description||'Описание не указано в Shikimori.')}</p><p><a href="https://shikimori.one${esc(anime.url||`/animes/${anime.id}`)}" target="_blank" rel="noreferrer">Открыть тайтл на Shikimori ↗</a></p></div>`;
+async function collectFranchiseTitles(start, fallbackType){
+  const key=t=>`${t.media_type||fallbackType}:${t.id}`;
+  const found=new Map([[key(start),{...start,media_type:start.media_type||fallbackType}]]);
+  const queue=[{title:start,depth:0}];let cursor=0;
+  const workers=Array.from({length:3},async()=>{
+    while(cursor<queue.length&&found.size<35){
+      const current=queue[cursor++];if(current.depth>=3)continue;
+      try{
+        const data=await api(`/api/related?id=${current.title.id}&type=${current.title.media_type||fallbackType}`);
+        for(const item of data.items||[]){
+          const normalized={...item,media_type:item.media_type||fallbackType};const k=key(normalized);
+          if(found.has(k)||found.size>=35)continue;
+          found.set(k,normalized);queue.push({title:normalized,depth:current.depth+1});
+        }
+      }catch(e){console.warn('Related titles unavailable for',current.title.id,e.message);}
+    }
+  });
+  await Promise.all(workers);
+  return [...found.values()];
+}
+async function selectAnime(anime){state.selectedAnime=anime;state.characters=[];state.relatedCharacters=[];state.franchiseTitles=[];state.characterDetails=new Map();$('#resultsSection').classList.add('hidden');$('#titleSection').classList.remove('hidden');$('#titleHero').innerHTML=`<img class="title-poster" src="${esc(imageUrl(anime.image,'original')||fallback)}" onerror="this.src='${fallback}'" alt=""><div><div class="eyebrow">SELECTED TITLE</div><h2 class="title-name">${esc(anime.russian||anime.name)}</h2><div class="title-meta"><span class="pill">${anime.media_type==='manga'?'MANGA':anime.media_type==='ranobe'?'RANOBE':'ANIME'} · ${esc(anime.kind||'')}</span><span class="pill">${esc(anime.status||'')}</span><span class="pill">${esc(anime.aired_on?.slice(0,4)||'Год неизвестен')}</span><span class="pill">${anime.episodes||'?'} эпизодов</span><span class="pill">★ ${anime.score||'—'}</span></div><p class="title-description">${esc(anime.description||'Описание не указано в Shikimori.')}</p><p><a href="https://shikimori.one${esc(anime.url||(anime.media_type==='manga'?`/mangas/${anime.id}`:`/animes/${anime.id}`))}" target="_blank" rel="noreferrer">Открыть тайтл на Shikimori ↗</a></p></div>`;
   $('#characters').innerHTML='';$('#emptyCharacters').classList.add('hidden');$('#characterCount').textContent='Загрузка...';status('Загружаю персонажей...');
-  try{const data=await api(`/api/roles?id=${anime.id}`);const seen=new Set();state.characters=(data.items||[]).filter(item=>item.character&&!seen.has(item.character.id)&&seen.add(item.character.id)).map(item=>({...item.character,role:item.roles||[]}));renderCharacters();status(`Персонажей загружено: ${state.characters.length}`);}
+  try{
+    status('Ищу все связанные сезоны, фильмы, OVA, специальные выпуски и мангу...');
+    const mediaType=['manga','ranobe'].includes(anime.media_type)?anime.media_type:'anime';
+    const allTitles=await collectFranchiseTitles(anime,mediaType);
+    state.franchiseTitles=allTitles;
+    renderFranchiseTitles();
+    status(`Загружаю персонажей из ${allTitles.length} связанных тайтлов...`);
+    const roleResults=await Promise.allSettled(allTitles.map(t=>api(`/api/roles?id=${t.id}&type=${t.media_type||mediaType}`)));
+    const seen=new Map();
+    roleResults.forEach((result,index)=>{
+      if(result.status!=='fulfilled')return;
+      for(const item of result.value.items||[]){
+        if(!item.character)continue;
+        const id=String(item.character.id);const existing=seen.get(id);
+        if(existing){existing.sourceTitles=[...(existing.sourceTitles||[]),allTitles[index].russian||allTitles[index].name].filter(Boolean);continue;}
+        seen.set(id,{...item.character,role:item.roles||[],sourceTitles:[allTitles[index].russian||allTitles[index].name].filter(Boolean)});
+      }
+    });
+    state.characters=[...seen.values()];
+    renderCharacters();
+    status(`Персонажей из франшизы загружено: ${state.characters.length} · связанных тайтлов: ${allTitles.length}`);
+  }
   catch(err){status(err.message,true);$('#characterCount').textContent='';$('#emptyCharacters').classList.remove('hidden');$('#emptyCharacters').textContent='Не удалось загрузить персонажей. '+err.message}
   $('#titleSection').scrollIntoView({behavior:'smooth',block:'start'});
 }
+function renderFranchiseTitles(){
+  const box=$('#franchiseTitles');if(!box)return;
+  box.innerHTML=state.franchiseTitles.map((t,i)=>`<button type="button" class="franchise-chip ${String(t.id)===String(state.selectedAnime?.id)&&t.media_type===state.selectedAnime?.media_type?'active':''}" data-franchise-index="${i}"><span>${t.media_type==='manga'?'MANGA':t.media_type==='ranobe'?'RANOBE':'ANIME'}</span><strong>${esc(t.russian||t.name||'Без названия')}</strong><small>${esc(t.kind||'')} ${t.aired_on?`· ${esc(t.aired_on.slice(0,4))}`:''} ${t.relation?`· ${esc(t.relation)}`:''}</small></button>`).join('')||'<p class="empty">Связанные части франшизы не найдены.</p>';
+  box.querySelectorAll('[data-franchise-index]').forEach(btn=>btn.addEventListener('click',()=>{const t=state.franchiseTitles[Number(btn.dataset.franchiseIndex)];if(t)selectAnime(t);}));
+}
 function roleLabel(roles){if(!Array.isArray(roles))return '';return roles.map(r=>typeof r==='string'?r:(r.russian||r.name||'')).filter(Boolean).join(', ')}
 function renderCharacters(){const q=$('#characterFilter').value.trim().toLowerCase();const list=state.characters.filter(c=>`${c.russian||''} ${c.name||''}`.toLowerCase().includes(q));$('#characterCount').textContent=`${list.length} / ${state.characters.length}`;const box=$('#characters');box.innerHTML='';$('#emptyCharacters').classList.toggle('hidden',list.length>0);
-  list.forEach(c=>{const card=document.createElement('article');card.className='character-card';const role=roleLabel(c.role);card.innerHTML=`<img src="${esc(imageUrl(c.image,'preview')||fallback)}" onerror="this.src='${fallback}'" alt=""><div class="char-info"><h3>${esc(c.russian||c.name||'Неизвестный персонаж')}</h3><p>${esc(c.name||'')}${role?` · ${esc(role)}`:''}</p></div>`;card.addEventListener('click',()=>openCharacter(c));box.append(card)});
+  list.forEach(c=>{const card=document.createElement('article');card.className='character-card';const role=roleLabel(c.role);card.innerHTML=`<img src="${esc(imageUrl(c.image,'preview')||fallback)}" onerror="this.src='${fallback}'" alt=""><div class="char-info"><h3>${esc(c.russian||c.name||'Неизвестный персонаж')}</h3><p>${esc(c.name||'')}${role?` · ${esc(role)}`:''}</p>${c.sourceTitles?.length?`<small class="char-source-titles">${esc([...new Set(c.sourceTitles)].slice(0,3).join(' · '))}</small>`:''}</div>`;card.addEventListener('click',()=>openCharacter(c));box.append(card)});
 }
 $('#characterFilter').addEventListener('input',renderCharacters);
 function plainDescription(value=''){
@@ -131,12 +177,15 @@ function relationshipMentions(description, owner, selected, candidates=[]){
       const before = plain.slice(Math.max(0, start - 65), start);
       const after = plain.slice(end, Math.min(plain.length, end + 65));
       const parentBefore = /(?:мать|мама|отец|папа|родител[ьяи]|mother|father|parent)\s*[,—–:：-]?\s*$/iu.test(before);
-      const childBefore = /(?:сын|дочь|дочери|сыновья|реб[её]нок|дети|son|daughter|child)\s*[,—–:：-]?\s*$/iu.test(before);
+      const childBefore = /(?:сын|дочь|дочери|сыновья|реб[её]нок|дети|son|daughter|child)\s+(?:of\s*)?[,—–:：-]?\s*$/iu.test(before);
       const parentAfter = /^\s*[,—–:：-]?\s*(?:мать|мама|отец|папа|mother|father|parent)\b/iu.test(after);
       const childAfter = /^\s*[,—–:：-]?\s*(?:сын|дочь|дочери|сыновья|реб[её]нок|дети|son|daughter|child)\b/iu.test(after);
+      const parentOfBefore = /(?:мать|мама|отец|папа|mother|father|parent)\s+(?:of\s*)?$/iu.test(before);
+      const namedIsChildAfter = /^(?:\s*[,—–:：-]?\s*)(?:(?:это|является|is|was)\s+)?(?:сын|дочь|дочери|сыновья|реб[её]нок|дети|son|daughter|child)\b/iu.test(after);
+      const namedIsParentAfter = /^(?:\s*[,—–:：-]?\s*)(?:(?:это|является|is|was)\s+)?(?:мать|мама|отец|папа|mother|father|parent)\b/iu.test(after);
       let candidateRelation = null;
-      if (parentBefore || childAfter) candidateRelation = 'child'; // named person is the owner's child
-      else if (childBefore || parentAfter) candidateRelation = 'parent'; // named person is the owner's parent
+      if (parentBefore || childAfter || parentOfBefore || namedIsChildAfter) candidateRelation = 'child'; // the matched character is owner's child
+      else if (childBefore || parentAfter || namedIsParentAfter) candidateRelation = 'parent'; // the matched character is owner's parent
       if (!candidateRelation) continue;
       const candidateId = String(entry.candidate.id);
       const dedupe = `${candidateId}:${candidateRelation}`;
@@ -165,7 +214,7 @@ function classifyRelationEvidence(evidence, ownerId, selectedId){
   return parentWord||childWord?'parent':'other';
 }
 function makeFamilyTree(selected, full){
-  const pool=new Map(state.characters.map(c=>[String(c.id),c]));for(const c of state.relatedCharacters)pool.set(String(c.id),c);pool.set(String(selected.id),{...selected,...full});
+  const pool=new Map(state.characters.map(c=>[String(c.id),{...c,...(state.characterDetails.get(String(c.id))||{})}]));for(const c of state.relatedCharacters)pool.set(String(c.id),{...c,...(state.characterDetails.get(String(c.id))||{})});for(const [id,c] of state.characterDetails)if(!pool.has(String(id)))pool.set(String(id),c);pool.set(String(selected.id),{...selected,...full});
   const descriptions=[];
   for(const c of pool.values()) if(c.description) descriptions.push({owner:c,description:c.description});
   const evidence=[];
@@ -230,7 +279,19 @@ function renderFamilyTree(selected, full){
   const tree=makeFamilyTree(selected,full);const g=tree.groups;
   const group=(title,items,relation,cls)=>`<section class="family-group ${cls}"><div class="family-group-title">${title}<span>${items.length}</span></div><div class="family-nodes">${items.map(c=>familyCard(c,c.relationLabel||relation)).join('')||'<div class="family-empty">Нет подтверждённых данных</div>'}</div></section>`;
   const mentions=tree.mentioned.filter(c=>!Object.values(g).flat().some(x=>String(x.id)===String(c.id)));
-  return `<section class="family-tree-wrap"><div class="family-tree-heading"><div><div class="eyebrow">CHARACTER RELATIONSHIP MAP</div><h3>Семейное дерево персонажа</h3></div><span class="tree-source">Shikimori + ACDB</span></div><div class="family-tree"><div class="tree-top">${group('РОДИТЕЛИ',g.parent,'Родитель','parents')}</div><div class="tree-middle"><div class="tree-side left">${group('БРАТЬЯ И СЁСТРЫ',g.sibling,'Брат / сестра','siblings')}</div><div class="tree-center"><div class="tree-line vertical"></div><div class="family-main"><img src="${esc(imageUrl(full.image||selected.image,'original')||fallback)}" onerror="this.src='${fallback}'" alt=""><strong>${esc(full.russian||selected.russian||full.name||selected.name)}</strong><small>ВЫБРАННЫЙ ПЕРСОНАЖ</small></div></div><div class="tree-side right">${group('СУПРУГИ / ПАРТНЁРЫ',g.partner,'Супруг / супруга','partners')}</div></div><div class="tree-bottom">${group('ДЕТИ',g.child,'Сын / дочь','children')}${group('ДРУГИЕ РОДСТВЕННИКИ',g.other,'Родственник','relatives')}${mentions.length?group('УПОМЯНУТЫ В ОПИСАНИИ',mentions,'Упоминание','mentions'):''}</div></div><p class="tree-disclaimer">Связи собираются из Shikimori и Anime Characters Database (ACDB). ACDB — пользовательская база, поэтому возможны ошибки, разные версии персонажа и неполные данные. Открывай источник, чтобы проверить каждую связь.</p></section>`;
+  return `<section class="family-tree-wrap"><div class="family-tree-heading"><div><div class="eyebrow">CHARACTER RELATIONSHIP MAP</div><h3>Семейное дерево персонажа</h3></div><span class="tree-source">Shikimori · вся франшиза + ACDB</span></div><div class="family-tree"><div class="tree-top">${group('РОДИТЕЛИ',g.parent,'Родитель','parents')}</div><div class="tree-middle"><div class="tree-side left">${group('БРАТЬЯ И СЁСТРЫ',g.sibling,'Брат / сестра','siblings')}</div><div class="tree-center"><div class="tree-line vertical"></div><div class="family-main"><img src="${esc(imageUrl(full.image||selected.image,'original')||fallback)}" onerror="this.src='${fallback}'" alt=""><strong>${esc(full.russian||selected.russian||full.name||selected.name)}</strong><small>ВЫБРАННЫЙ ПЕРСОНАЖ</small></div></div><div class="tree-side right">${group('СУПРУГИ / ПАРТНЁРЫ',g.partner,'Супруг / супруга','partners')}</div></div><div class="tree-bottom">${group('ДЕТИ',g.child,'Сын / дочь','children')}${group('ДРУГИЕ РОДСТВЕННИКИ',g.other,'Родственник','relatives')}${mentions.length?group('УПОМЯНУТЫ В ОПИСАНИИ',mentions,'Упоминание','mentions'):''}</div></div><p class="tree-disclaimer">Связи собираются из Shikimori и Anime Characters Database (ACDB). ACDB — пользовательская база, поэтому возможны ошибки, разные версии персонажа и неполные данные. Открывай источник, чтобы проверить каждую связь.</p></section>`;
+}
+async function loadRosterDescriptions(selectedId, selectedFull){
+  const roster=[...state.characters,...state.relatedCharacters];
+  const unique=[...new Map(roster.filter(x=>x?.id).map(x=>[String(x.id),x])).values()];
+  if(selectedFull?.id)state.characterDetails.set(String(selectedFull.id),selectedFull);
+  const missing=unique.filter(x=>String(x.id)!==String(selectedId)&&!state.characterDetails.has(String(x.id))).slice(0,80);
+  let cursor=0;
+  const workers=Array.from({length:4},async()=>{
+    while(cursor<missing.length){const item=missing[cursor++];try{const data=await api(`/api/character?id=${encodeURIComponent(item.id)}`);if(data.character)state.characterDetails.set(String(item.id),{...item,...data.character});}catch(e){/* a missing profile must not block other family evidence */}}
+  });
+  await Promise.all(workers);
+  return missing.length;
 }
 async function openCharacter(c){
   const modal=$('#modal');modal.classList.remove('hidden');document.body.style.overflow='hidden';
@@ -247,6 +308,10 @@ async function openCharacter(c){
     return;
   }
   try{const data=await api(`/api/character?id=${c.id}`);full=data.character||c;}catch(e){/* roster data remains usable */}
+  state.characterDetails.set(String(c.id),{...c,...full});
+  // Load descriptions of other characters from every related season/movie/OVA/manga entry.
+  // This is required for reverse lookup: when opening a child, the parent's biography can name the child.
+  await loadRosterDescriptions(c.id,full);
   // Load directly linked Shikimori characters so they can appear in the graph too.
   const linkedIds=[...new Set([...String(full.description||'').matchAll(/\[character=(\d+)\]/gi)].map(m=>m[1]))]
     .filter(id=>!state.characters.some(x=>String(x.id)===id)&&!state.relatedCharacters.some(x=>String(x.id)===id)&&id!==String(c.id)).slice(0,12);
@@ -265,7 +330,7 @@ function renderShikimoriProfile(c,full){
   const acdb=full.acdbSource;
   const sourceLinks=`<p><a class="source-link" href="https://shikimori.one${esc(full.url||c.url||`/characters/${c.id}`)}" target="_blank" rel="noreferrer">Страница персонажа на Shikimori ↗</a>${acdb?` · <a class="source-link" href="${esc(acdb.url)}" target="_blank" rel="noreferrer">Связи ACDB ↗</a>`:''}</p>`;
   const diag=full.acdbDiagnostics;
-  const acdbStatus=diag?`<p class="acdb-status">${diag.error?`ACDB временно недоступна — ${esc(diag.error)}. Продолжаю показывать связи, найденные в Shikimori.`:diag.message?`ACDB: ${esc(diag.message)}`:`ACDB: персонаж ${acdb?'найден':'не сопоставлен'}, связей получено: ${Number(diag.relationRowsParsed||0)}.`}</p>`:'';
+  const acdbStatus=diag?`<p class="acdb-status">${diag.error?`ACDB сейчас недоступна — ${esc(diag.error)}. Семейные связи Shikimori продолжают отображаться независимо от ACDB.`:diag.message?`ACDB: ${esc(diag.message)}`:`ACDB: персонаж ${acdb?'найден':'не сопоставлен'}, связей получено: ${Number(diag.relationRowsParsed||0)}.`}</p>`:'';
   $('#modalContent').innerHTML=`<div class="profile"><img src="${esc(imageUrl(full.image||c.image,'original')||fallback)}" onerror="this.src='${fallback}'" alt=""><div><div class="eyebrow">CHARACTER PROFILE</div><h2 id="modalName">${esc(full.russian||c.russian||full.name||c.name)}</h2><div class="native">${esc(full.name||c.name||'')}</div><p class="description">${esc(desc)}</p>${sourceLinks}${acdbStatus}</div></div>${renderFamilyTree(c,full)}`;
   bindFamilyTreeClicks();
 }

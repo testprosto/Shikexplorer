@@ -19,7 +19,7 @@
     <section class="hero">
       <div class="eyebrow"><span class="pulse"></span> CHARACTER RESEARCH WORKSPACE</div>
       <h1>Найди свой <span>тайтл.</span><br/>Изучи каждого персонажа.</h1>
-      <p class="hero-copy">Введи название аниме или манги — соберём персонажей и попробуем построить семейные ветки по Shikimori и внешним базам персонажей.</p>
+      <p class="hero-copy">Введи название аниме или манги — соберём персонажей из связанных сезонов, фильмов, OVA, Specials и манги, а затем попробуем построить семейные ветки.</p>
       <form id="searchForm" class="searchbar">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg>
         <input id="query" type="search" placeholder="Например: Naruto, Berserk, Uba..." autocomplete="off" minlength="2" required />
@@ -36,6 +36,7 @@
 
     <section id="titleSection" class="title-section hidden">
       <div id="titleHero" class="title-hero"></div>
+      <section class="franchise-section"><div class="section-head"><div><div class="eyebrow">FRANCHISE / RELATED ENTRIES</div><h2>Все части франшизы</h2></div><span class="count">Сезоны · фильмы · OVA · Specials · манга</span></div><div id="franchiseTitles" class="franchise-list"></div></section>
       <div class="section-head character-head"><div><div class="eyebrow">CHARACTER DATABASE</div><h2>Персонажи</h2></div><div class="character-tools"><input id="characterFilter" type="search" placeholder="Фильтр персонажей..."/><span id="characterCount" class="count"></span></div></div>
       <div id="characters" class="character-grid"></div>
       <div id="emptyCharacters" class="empty hidden">Для этого тайтла Shikimori не вернул список персонажей.</div>
