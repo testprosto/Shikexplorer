@@ -58,9 +58,21 @@ module.exports = async (req, res) => {
   if (req.method !== 'GET') return send(res, 405, { error: 'Используй GET.' });
   const name = String(req.query.name || '').trim();
   const title = String(req.query.title || '').trim();
-  if (name.length < 2) return send(res, 400, { error: 'Нужно имя персонажа.' });
+  const wdId = String(req.query.id || '').trim().toUpperCase();
+  if (wdId && !/^Q\d+$/.test(wdId)) return send(res, 400, { error: 'Неверный ID Wikidata.' });
+  if (!wdId && name.length < 2) return send(res, 400, { error: 'Нужно имя персонажа.' });
 
   try {
+    let chosen, workLabels = [], candidates = 0;
+    if (wdId) {
+      // Direct lookup by Wikidata id (used when the user clicks a relative).
+      const ents = await entities([wdId], 'labels|descriptions|claims');
+      chosen = ents[wdId];
+      if (!chosen || chosen.missing !== undefined) return send(res, 200, { source: 'Wikidata', matched: false, relations: [], message: 'Элемент не найден в Wikidata.' });
+      const wIds = ['P1441', 'P1080', 'P1445'].flatMap(p => ids(chosen.claims, p));
+      const works = wIds.length ? await entities([...new Set(wIds)], 'labels') : {};
+      workLabels = wIds.map(id => labelOf(works[id])).filter(Boolean);
+    } else {
     // 1. Search candidates by name (English and Russian).
     const found = new Map();
     for (const language of ['en', 'ru']) {
@@ -72,7 +84,7 @@ module.exports = async (req, res) => {
     if (!found.size) return send(res, 200, { source: 'Wikidata', matched: false, relations: [], message: 'Персонаж не найден в Wikidata.' });
 
     // 2. Keep only fictional characters; rank by name and by the work's title.
-    const cands = await entities([...found.keys()], 'labels|claims');
+    const cands = await entities([...found.keys()], 'labels|descriptions|claims');
     const workIds = new Set();
     for (const e of Object.values(cands)) {
       for (const p of ['P1441', 'P1080', 'P1445']) ids(e.claims, p).forEach(id => workIds.add(id));
@@ -87,11 +99,16 @@ module.exports = async (req, res) => {
         .flatMap(id => Object.values(works[id]?.labels || {}).map(l => norm(l.value)));
       if (nt && workLabels.some(l => l === nt)) score += 12;
       else if (nt && workLabels.some(l => l && (l.includes(nt) || nt.includes(l)))) score += 6;
-      return { e, score: isChar ? score : 0, workLabels };
+      const workNames = ['P1441', 'P1080', 'P1445'].flatMap(p => ids(e.claims, p)).map(id => labelOf(works[id])).filter(Boolean);
+      return { e, score: isChar ? score : 0, workLabels, workNames };
     }).filter(x => x.score >= 5).sort((a, b) => b.score - a.score);
 
-    const chosen = ranked[0]?.e;
+    chosen = ranked[0]?.e;
+    candidates = found.size;
+    workLabels = ranked[0] ? ranked[0].workNames : [];
     if (!chosen) return send(res, 200, { source: 'Wikidata', matched: false, relations: [], message: 'Персонаж не найден в Wikidata по этому названию.' });
+
+    }
 
     // 3. Collect family relations from the chosen item.
     const raw = [];
@@ -112,11 +129,12 @@ module.exports = async (req, res) => {
     return send(res, 200, {
       source: 'Wikidata', matched: true,
       character: {
-        id: chosen.id, name: labelOf(chosen), anime: ranked[0].workLabels[0] || '',
-        image: imageOf(chosen), url: `https://www.wikidata.org/wiki/${chosen.id}`
+        id: chosen.id, name: labelOf(chosen), anime: workLabels[0] || '',
+        image: imageOf(chosen), url: `https://www.wikidata.org/wiki/${chosen.id}`,
+        description: chosen.descriptions?.ru?.value || chosen.descriptions?.en?.value || ''
       },
       relations,
-      diagnostics: { candidates: found.size, relationsReturned: relations.length },
+      diagnostics: { candidates, relationsReturned: relations.length },
       note: 'Связи взяты из Wikidata: покрытие вымышленных персонажей неполное, отсутствие связи не означает, что её нет.'
     });
   } catch (e) {
