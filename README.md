@@ -66,3 +66,11 @@ The related-title endpoint is limited to relations Shikimori publishes. It does 
 - ACDB relation labels are matched as whole words/phrases. The previous substring test could interpret the letters `mat` inside `information` as `mother`, producing false parents such as Masumi Shirase.
 - Removed the unsafe last-resort scan of arbitrary links across the entire ACDB profile; only structured relation rows and relation-section fallback are used.
 - Repeated character links in the "mentioned" section are deduplicated.
+
+
+## V4: Wikidata + исправление парсера ACDB
+
+- Новый маршрут `GET /api/wikidata-relations?name=Naruto%20Uzumaki&title=Naruto` — семейные связи из Wikidata (P22 отец, P25 мать, P40 ребёнок, P26 супруг, P3373 брат/сестра, P1038 родственник). Если Wikidata недоступна, маршрут отвечает 200 с `unavailable: true`.
+- Профиль персонажа теперь объединяет Shikimori + ACDB + Wikidata. Дубли (одно имя и тот же тип связи) убираются. Карточка родственника, которого нет в Shikimori, из Wikidata открывает его страницу на Wikidata.
+- Исправлен `familyKind` в `api/acdb-relations.js`: вместо `\\b` (буквальный слэш) используется `\b` (граница слова). Раньше метки «Mother of», «Son of» и т.п. отбрасывались.
+- Покрытие вымышленных персонажей в Wikidata неполное: отсутствие связи не означает, что её нет.
