@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#101018" />
+  <meta name="description" content="Найди любое аниме или мангу и изучи всех персонажей по данным Shikimori." />
+  <title>Shikimori Explorer — база персонажей</title>
+  <link rel="preconnect" href="https://shikimori.one" />
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
+  <header class="topbar">
+    <a class="brand" href="/"><span class="brand-mark">S</span><span>SHIKIMORI<span class="brand-light">EXPLORER</span></span></a>
+    <span class="top-note">ANIME & MANGA DATABASE</span>
+  </header>
+  <main class="wrap">
+    <section class="hero">
+      <div class="eyebrow"><span class="pulse"></span> CHARACTER RESEARCH WORKSPACE</div>
+      <h1>Найди свой <span>тайтл.</span><br/>Изучи каждого персонажа.</h1>
+      <p class="hero-copy">Введи название аниме или манги — соберём карточку тайтла, персонажей, изображения и доступную информацию из Shikimori.</p>
+      <form id="searchForm" class="searchbar">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg>
+        <input id="query" type="search" placeholder="Например: Naruto, Berserk, Uba..." autocomplete="off" minlength="2" required />
+        <button id="searchButton" type="submit">Найти <span>↗</span></button>
+      </form>
+      <div class="search-hint">Ищи на русском, английском или японском названии</div>
+    </section>
+
+    <section id="status" class="status" aria-live="polite"></section>
+    <section id="resultsSection" class="results-section hidden">
+      <div class="section-head"><div><div class="eyebrow">SEARCH RESULTS</div><h2>Выбери тайтл</h2></div><span id="resultCount" class="count"></span></div>
+      <div id="results" class="title-grid"></div>
+    </section>
+
+    <section id="titleSection" class="title-section hidden">
+      <div id="titleHero" class="title-hero"></div>
+      <div class="section-head character-head"><div><div class="eyebrow">CHARACTER DATABASE</div><h2>Персонажи</h2></div><div class="character-tools"><input id="characterFilter" type="search" placeholder="Фильтр персонажей..."/><span id="characterCount" class="count"></span></div></div>
+      <div id="characters" class="character-grid"></div>
+      <div id="emptyCharacters" class="empty hidden">Для этого тайтла Shikimori не вернул список персонажей.</div>
+    </section>
+    <footer><span>Данные предоставляются <a href="https://shikimori.one" target="_blank" rel="noreferrer">Shikimori</a>.</span><span>Неофициальный проект · Не связан с Shikimori</span></footer>
+  </main>
+
+  <div id="modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalName">
+    <div class="modal-backdrop" data-close="true"></div>
+    <article class="modal-card"><button id="closeModal" class="close" aria-label="Закрыть">×</button><div id="modalContent"></div></article>
+  </div>
+  <script src="/app.js" defer></script>
+</body>
+</html>
