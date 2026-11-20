@@ -44,7 +44,7 @@ function plainDescription(value=''){
     .replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&amp;/g,'&')
     .replace(/\s+/g,' ').trim();
 }
-function relationshipMentions(description, owner, selected){
+function relationshipMentions(description, owner, selected, candidates=[]){
   const raw=String(description||''); const out=[];
   const patterns=[
     {type:'parent',label:'Отец',re:/\b(отец|папа|father|dad)\b/i},
@@ -97,6 +97,60 @@ function relationshipMentions(description, owner, selected){
   }
   const htmlLink=/href=["'][^"']*\/characters\/(\d+)[^"']*["'][^>]*>([\s\S]*?)<\/a>/gi;
   while((m=htmlLink.exec(raw))){const beforeRaw=raw.slice(Math.max(0,m.index-100),m.index);const afterRaw=raw.slice(htmlLink.lastIndex,Math.min(raw.length,htmlLink.lastIndex+100));const before=plainDescription(beforeRaw).slice(-100);const after=plainDescription(afterRaw).slice(0,100);const context=plainDescription(beforeRaw+' '+m[2]+' '+afterRaw);const relation=classify(context,before,after,m[1]);if(!relation)continue;if(String(m[1])===String(selected.id)&&String(owner.id)!==String(selected.id))add(owner.id,context,relation,'reverse-description-link');else add(m[1],context,relation,'description-link');}
+
+  // Shikimori biographies often mention relatives as plain text rather than
+  // [character=ID] links. Match unique character names from the current title roster.
+  const plain = plainDescription(raw);
+  const aliasOwners = new Map();
+  const entries = [];
+  for (const candidate of candidates || []) {
+    if (!candidate || !candidate.id || String(candidate.id) === String(owner.id)) continue;
+    const fullNames = [candidate.russian, candidate.name].filter(Boolean);
+    const aliases = new Set();
+    for (const fullName of fullNames) {
+      const normalized = plainDescription(fullName);
+      if (normalized.length >= 4) aliases.add(normalized);
+      for (const token of normalized.split(/\s+/)) if (token.length >= 3) aliases.add(token);
+    }
+    for (const alias of aliases) {
+      const key = alias.toLocaleLowerCase();
+      if (!aliasOwners.has(key)) aliasOwners.set(key, new Set());
+      aliasOwners.get(key).add(String(candidate.id));
+      entries.push({ candidate, alias, key });
+    }
+  }
+  const escaped = value => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const seenNamed = new Set();
+  for (const entry of entries) {
+    if (aliasOwners.get(entry.key)?.size !== 1) continue; // ambiguous first/last name: do not guess
+    const re = new RegExp('(^|[^\\p{L}\\p{N}])(' + escaped(entry.alias) + ')(?=$|[^\\p{L}\\p{N}])', 'giu');
+    let hit;
+    while ((hit = re.exec(plain))) {
+      const start = hit.index + hit[1].length;
+      const end = start + hit[2].length;
+      const before = plain.slice(Math.max(0, start - 65), start);
+      const after = plain.slice(end, Math.min(plain.length, end + 65));
+      const parentBefore = /(?:мать|мама|отец|папа|родител[ьяи]|mother|father|parent)\s*[,—–:：-]?\s*$/iu.test(before);
+      const childBefore = /(?:сын|дочь|дочери|сыновья|реб[её]нок|дети|son|daughter|child)\s*[,—–:：-]?\s*$/iu.test(before);
+      const parentAfter = /^\s*[,—–:：-]?\s*(?:мать|мама|отец|папа|mother|father|parent)\b/iu.test(after);
+      const childAfter = /^\s*[,—–:：-]?\s*(?:сын|дочь|дочери|сыновья|реб[её]нок|дети|son|daughter|child)\b/iu.test(after);
+      let candidateRelation = null;
+      if (parentBefore || childAfter) candidateRelation = 'child'; // named person is the owner's child
+      else if (childBefore || parentAfter) candidateRelation = 'parent'; // named person is the owner's parent
+      if (!candidateRelation) continue;
+      const candidateId = String(entry.candidate.id);
+      const dedupe = `${candidateId}:${candidateRelation}`;
+      if (seenNamed.has(dedupe)) continue;
+      seenNamed.add(dedupe);
+      const context = plain.slice(Math.max(0, start - 70), Math.min(plain.length, end + 70));
+      if (String(owner.id) === String(selected.id)) {
+        add(candidateId, context, { type: candidateRelation, label: candidateRelation === 'child' ? 'Сын / дочь' : 'Родитель' }, 'description-name-match');
+      } else if (candidateId === String(selected.id)) {
+        const ownerRelation = candidateRelation === 'child' ? 'parent' : 'child';
+        add(owner.id, context, { type: ownerRelation, label: ownerRelation === 'parent' ? 'Родитель' : 'Сын / дочь' }, 'reverse-description-name-match');
+      }
+    }
+  }
   return out;
 }
 function classifyRelationEvidence(evidence, ownerId, selectedId){
@@ -116,7 +170,7 @@ function makeFamilyTree(selected, full){
   for(const c of pool.values()) if(c.description) descriptions.push({owner:c,description:c.description});
   const evidence=[];
   for(const item of descriptions){
-    const found=relationshipMentions(item.description,item.owner,selected);
+    const found=relationshipMentions(item.description,item.owner,selected,[...pool.values()]);
     for(const e of found){const candidate=pool.get(e.id);if(candidate)evidence.push({...e,candidate,ownerId:String(item.owner.id)});}
   }
   // A character's own description can directly link to relatives that are not in the selected title roster.
