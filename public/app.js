@@ -187,15 +187,17 @@ async function openCharacter(c){
     const name=full.name||c.name||full.russian||c.russian||'';
     const title=state.selectedAnime?.name||state.selectedAnime?.russian||'';
     const external=await api(`/api/acdb-relations?name=${encodeURIComponent(name)}&title=${encodeURIComponent(title)}`);
-    if(external.matched){state.acdbRelations=external.relations||[];full.acdbSource=external.character;}
-  }catch(e){/* Shikimori data remains available if ACDB is unreachable */}
+    if(external.matched){state.acdbRelations=external.relations||[];full.acdbSource=external.character;full.acdbDiagnostics=external.diagnostics||{relationRowsParsed:state.acdbRelations.length};}else{full.acdbDiagnostics={message:external.message||'Персонаж не найден в ACDB',relationRowsParsed:0};}
+  }catch(e){full.acdbDiagnostics={error:e.message,relationRowsParsed:0};}
   renderShikimoriProfile(c,full);
 }
 function renderShikimoriProfile(c,full){
   const desc=plainDescription(full.description||c.description||'Описание отсутствует.');
   const acdb=full.acdbSource;
   const sourceLinks=`<p><a class="source-link" href="https://shikimori.one${esc(full.url||c.url||`/characters/${c.id}`)}" target="_blank" rel="noreferrer">Страница персонажа на Shikimori ↗</a>${acdb?` · <a class="source-link" href="${esc(acdb.url)}" target="_blank" rel="noreferrer">Связи ACDB ↗</a>`:''}</p>`;
-  $('#modalContent').innerHTML=`<div class="profile"><img src="${esc(imageUrl(full.image||c.image,'original')||fallback)}" onerror="this.src='${fallback}'" alt=""><div><div class="eyebrow">CHARACTER PROFILE</div><h2 id="modalName">${esc(full.russian||c.russian||full.name||c.name)}</h2><div class="native">${esc(full.name||c.name||'')}</div><p class="description">${esc(desc)}</p>${sourceLinks}</div></div>${renderFamilyTree(c,full)}`;
+  const diag=full.acdbDiagnostics;
+  const acdbStatus=diag?`<p class="acdb-status">${diag.error?`ACDB: ошибка загрузки — ${esc(diag.error)}`:diag.message?`ACDB: ${esc(diag.message)}`:`ACDB: персонаж ${acdb?'найден':'не сопоставлен'}, связей получено: ${Number(diag.relationRowsParsed||0)}.`}</p>`:'';
+  $('#modalContent').innerHTML=`<div class="profile"><img src="${esc(imageUrl(full.image||c.image,'original')||fallback)}" onerror="this.src='${fallback}'" alt=""><div><div class="eyebrow">CHARACTER PROFILE</div><h2 id="modalName">${esc(full.russian||c.russian||full.name||c.name)}</h2><div class="native">${esc(full.name||c.name||'')}</div><p class="description">${esc(desc)}</p>${sourceLinks}${acdbStatus}</div></div>${renderFamilyTree(c,full)}`;
   bindFamilyTreeClicks();
 }
 function renderExternalProfile(full,data){
