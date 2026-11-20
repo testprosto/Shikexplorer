@@ -37,3 +37,13 @@
 ACDB — пользовательская база, а не официальный реестр канона: возможны ошибки, дубли, альтернативные версии персонажа и неполные связи. Поэтому возле дерева есть ссылки на источники. Не найденные связи не додумываются. Изображения внешних персонажей берутся из их карточек ACDB.
 
 Wikidata может использоваться как дополнительный источник в будущем, но покрытие вымышленных персонажей там заметно менее полное; сейчас основной дополнительный источник — ACDB.
+
+
+## Family Tree parser update
+
+- ACDB relation extraction now supports relation anchors outside `<li>` rows and scans the full character profile as a last-resort fallback.
+- The API response includes `diagnostics.relationRowsParsed`.
+- The character profile reports whether ACDB matched the character, how many relationships were returned, or why the source failed.
+- Relationship direction is preserved (for example, `Son of` means the linked character is a parent; `Mother of` means the linked character is a child).
+
+Note: this update improves extraction when ACDB contains a relation; it cannot invent family information that a source does not publish. ACDB is community-maintained and should be checked against the linked profile.
