@@ -19,11 +19,13 @@ async function get(url, json=false) {
 }
 function familyKind(label='') {
   const s = norm(label);
-  if (/father|mother|parent|dad|mom|pap|mama|mat|otec|roditel/.test(s)) return 'parent';
-  if (/son|daughter|child|children|syn|doch|reben|deti/.test(s)) return 'child';
-  if (/brother|sister|sibling|brat|sestra|brat|ses/.test(s)) return 'sibling';
-  if (/husband|wife|spouse|married|boyfriend|girlfriend|partner|hus|wife|muz|zhen|suprug/.test(s)) return 'partner';
-  if (/uncle|aunt|nephew|niece|cousin|grandfather|grandmother|grandson|granddaughter|grandparent|grandchild|step|adopt|relative|дяд|тет|племян|двоюрод|дед|баб|внук|внуч|прием|приём|сводн/.test(s)) return 'other';
+  // Match whole relation words/phrases only. Substring checks such as "mat"
+  // incorrectly classify "information" as "mother".
+  if (/(^|\\b)(father|mother|parent|dad|mom|mama|papa|otec|roditel)(\\b|$)|мать|мама|отец|папа|родител/.test(s)) return 'parent';
+  if (/(^|\\b)(son|daughter|child|children)(\\b|$)|сын|дочь|дочер|сынов|ребен|дети/.test(s)) return 'child';
+  if (/(^|\\b)(brother|sister|sibling)(\\b|$)|брат|сестр/.test(s)) return 'sibling';
+  if (/(^|\\b)(husband|wife|spouse|married|boyfriend|girlfriend|partner)(\\b|$)|муж|жен|супруг/.test(s)) return 'partner';
+  if (/(^|\\b)(uncle|aunt|nephew|niece|cousin|grandfather|grandmother|grandson|granddaughter|grandparent|grandchild|step|adopt|relative)(\\b|$)|дяд|тет|племян|двоюрод|дед|баб|внук|внуч|прием|приём|сводн/.test(s)) return 'other';
   return null;
 }
 function relationSide(label='') {
@@ -73,28 +75,9 @@ function extractRelations(html) {
       }
     }
   }
-  // Last-resort scan across the full profile if ACDB moves the relation block.
-  if (!out.length) {
-    const anchorRe = /<a\b([^>]*)>([\s\S]*?)<\/a>/gi;
-    const anchors = [...html.matchAll(anchorRe)].map(m => ({
-      text: clean(m[2]),
-      href: ((m[1].match(/href=["']([^"']+)["']/i) || [])[1] || '')
-    }));
-    for (let i = 0; i < anchors.length; i++) {
-      const rel = anchors[i], kind = familyKind(rel.text);
-      if (!kind) continue;
-      for (let j = i + 1; j < Math.min(anchors.length, i + 4); j++) {
-        const target = anchors[j];
-        if (!/characters\.php\?/i.test(target.href)) continue;
-        const id = (target.href.match(/[?&]id=(\d+)/i) || [])[1];
-        if (!id || !target.text) continue;
-        out.push({ id, name: target.text, label: rel.text, kind, side: relationSide(rel.text), url: `${BASE}/characters.php?id=${id}` });
-        break;
-      }
-    }
-  }
+  // Do not guess relations from unrelated profile links outside the Relations section.
   const seen = new Set();
-  return out.filter(x => { const k = `${x.id}:${x.label}`; if (seen.has(k)) return false; seen.add(k); return true; }).slice(0, 35);
+  return out.filter(x => { const k = `${x.id}:${x.side||''}:${x.kind||''}`; if (seen.has(k)) return false; seen.add(k); return true; }).slice(0, 35);
 }
 function extractImage(html) {
   const patterns = [
