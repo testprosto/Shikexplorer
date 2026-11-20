@@ -1,0 +1,7 @@
+{
+  "name": "shikimori-title-explorer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Search anime and manga on Shikimori and explore their characters",
+  "engines": { "node": ">=18" }
+}
