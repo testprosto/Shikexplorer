@@ -47,3 +47,14 @@ Wikidata может использоваться как дополнительн
 - Relationship direction is preserved (for example, `Son of` means the linked character is a parent; `Mother of` means the linked character is a child).
 
 Note: this update improves extraction when ACDB contains a relation; it cannot invent family information that a source does not publish. ACDB is community-maintained and should be checked against the linked profile.
+
+
+## Franchise-wide character coverage
+
+- Search now queries `/animes`, `/mangas` and `/ranobe` and labels each result by media type.
+- The selected anime, manga or ranobe loads Shikimori `/related` entries, including related seasons, movies, OVAs, specials and manga/anime adaptations where Shikimori exposes them.
+- Character lists are merged across the related entries, de-duplicated by Shikimori character ID, and show which entries contain each character.
+- When a character profile opens, the app loads descriptions for other characters in the merged franchise roster (up to 80 profiles, four concurrent requests) so reciprocal family links can be found even if only the parent's description states the relationship.
+- ACDB remains an optional source. HTTP 503 is an upstream ACDB availability error and does not prevent Shikimori-based family extraction.
+
+The related-title endpoint is limited to relations Shikimori publishes. It does not infer that an unrelated OVA or filler episode belongs to a franchise if Shikimori has no relation entry.
