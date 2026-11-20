@@ -52,13 +52,45 @@ function extractRelations(html) {
     if (!name) continue;
     out.push({ id: targetId, name, label, kind, side: relationSide(label), url: `${BASE}/characters.php?id=${targetId}` });
   }
-  // Fallback for markup where the relation rows are not wrapped in list items.
+  // Robust fallback: ACDB relation rows are not guaranteed to be <li> elements.
+  // Pair a relation-type anchor with the next character-profile anchor.
   if (!out.length) {
-    const re = /<a\b[^>]*>([^<]{2,60})<\/a>\s*<a\b[^>]*href=["'][^"']*characters\.php\?[^"']*[?&]id=(\d+)[^"']*["'][^>]*>([\s\S]*?)<\/a>/gi;
-    let m;
-    while ((m = re.exec(section))) {
-      const kind = familyKind(clean(m[1]));
-      if (kind) out.push({ id: m[2], name: clean(m[3]), label: clean(m[1]), kind, side: relationSide(clean(m[1])), url: `${BASE}/characters.php?id=${m[2]}` });
+    const anchorRe = /<a\b([^>]*)>([\s\S]*?)<\/a>/gi;
+    const anchors = [...section.matchAll(anchorRe)].map(m => ({
+      text: clean(m[2]),
+      href: ((m[1].match(/href=["']([^"']+)["']/i) || [])[1] || '')
+    }));
+    for (let i = 0; i < anchors.length; i++) {
+      const rel = anchors[i], kind = familyKind(rel.text);
+      if (!kind) continue;
+      for (let j = i + 1; j < Math.min(anchors.length, i + 4); j++) {
+        const target = anchors[j];
+        if (!/characters\.php\?/i.test(target.href)) continue;
+        const id = (target.href.match(/[?&]id=(\d+)/i) || [])[1];
+        if (!id || !target.text) continue;
+        out.push({ id, name: target.text, label: rel.text, kind, side: relationSide(rel.text), url: `${BASE}/characters.php?id=${id}` });
+        break;
+      }
+    }
+  }
+  // Last-resort scan across the full profile if ACDB moves the relation block.
+  if (!out.length) {
+    const anchorRe = /<a\b([^>]*)>([\s\S]*?)<\/a>/gi;
+    const anchors = [...html.matchAll(anchorRe)].map(m => ({
+      text: clean(m[2]),
+      href: ((m[1].match(/href=["']([^"']+)["']/i) || [])[1] || '')
+    }));
+    for (let i = 0; i < anchors.length; i++) {
+      const rel = anchors[i], kind = familyKind(rel.text);
+      if (!kind) continue;
+      for (let j = i + 1; j < Math.min(anchors.length, i + 4); j++) {
+        const target = anchors[j];
+        if (!/characters\.php\?/i.test(target.href)) continue;
+        const id = (target.href.match(/[?&]id=(\d+)/i) || [])[1];
+        if (!id || !target.text) continue;
+        out.push({ id, name: target.text, label: rel.text, kind, side: relationSide(rel.text), url: `${BASE}/characters.php?id=${id}` });
+        break;
+      }
     }
   }
   const seen = new Set();
@@ -117,6 +149,7 @@ module.exports = async (req, res) => {
       source: 'Anime Characters Database', matched: true,
       character: { id: String(chosen.id), name: chosen.name, anime: chosen.anime_name || '', image: chosen.character_image || extractImage(html), url: `${BASE}/characters.php?id=${chosen.id}`, graphUrl: `${BASE}/relationsgraph.php?id=${chosen.id}&nested=` },
       relations: nodes,
+      diagnostics: { profileFetched: true, relationRowsParsed: nodes.length, parser: 'li+anchor-fallback+full-profile-fallback' },
       note: 'Связи взяты из пользовательской базы ACDB; проверяй контекст и версию персонажа.'
     });
   } catch (e) {
