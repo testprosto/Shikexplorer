@@ -59,15 +59,30 @@ function relationshipMentions(description, owner, selected){
   const classify=(context,before,after,linkedId)=>{
     const rel=patterns.find(x=>x.re.test(context));if(!rel)return null;
     if(rel.type==='sibling'||rel.type==='partner'||rel.type==='other')return rel;
+    const b=String(before||'').toLowerCase().trim();
+    const a=String(after||'').toLowerCase().trim();
     if(String(owner.id)===String(selected.id)){
-      // In the selected character's own description: "son of [X]" => X is a parent.
-      if(rel.type==='parent' && /\b(?:father|mother|отец|мать)\s+of\s*$/i.test(before))return {...rel,type:'child',label:'Сын / дочь'};
-      if(rel.type==='child' && /\b(?:son|daughter|сын|дочь)\s+of\s*$/i.test(before))return {...rel,type:'parent',label:'Родитель'};
+      // The selected character is the subject of this description.
+      // Russian Shikimori bios often use compact wording: "Мать [Masato]", not "мать персонажа".
+      // Therefore the linked character is the selected character's CHILD.
+      if(rel.type==='parent' && /(?:мать|мама|отец|папа|родитель|mother|father|parent)\s*[,—–:-]?\s*$/i.test(b))
+        return {...rel,type:'child',label:'Сын / дочь'};
+      // Conversely: "сын [X]" / "дочь [X]" means the linked character is a PARENT.
+      if(rel.type==='child' && /(?:сын|дочь|сыновья|дочери|ребёнок|ребенок|son|daughter|child)\s+(?:of\s*)?$/i.test(b))
+        return {...rel,type:'parent',label:'Родитель'};
+      if(rel.type==='parent' && /\b(?:son|daughter|child)\s+of\s*$/i.test(b))
+        return {...rel,type:'child',label:'Сын / дочь'};
+      if(rel.type==='child' && /\b(?:father|mother|parent)\s+of\s*$/i.test(b))
+        return {...rel,type:'parent',label:'Родитель'};
       return rel;
     }
-    // In another character's description, the linked mention is the selected character.
-    if(rel.type==='parent' && /\b(?:is|was)\s+(?:the\s+)?(?:father|mother|отец|мать)\b/i.test(after))return {...rel,type:'child',label:'Сын / дочь'};
-    if(rel.type==='child' && /\b(?:son|daughter|сын|дочь)\s+of\s*$/i.test(before))return {...rel,type:'child',label:'Сын / дочь'};
+    // The owner is another character; infer the direction from the linked mention's local wording.
+    if(rel.type==='parent' && /(?:мать|мама|отец|папа|mother|father|parent)\s*[,—–:-]?\s*$/i.test(b))
+      return {...rel,type:'parent',label:'Родитель'};
+    if(rel.type==='parent' && /\b(?:is|was)\s+(?:the\s+)?(?:father|mother)\b/i.test(a))
+      return {...rel,type:'parent',label:'Родитель'};
+    if(rel.type==='child' && /(?:сын|дочь|son|daughter)\s+(?:of\s*)?$/i.test(b))
+      return {...rel,type:'child',label:'Сын / дочь'};
     if(rel.type==='child')return {...rel,type:'parent',label:'Родитель'};
     return rel;
   };
@@ -196,7 +211,7 @@ function renderShikimoriProfile(c,full){
   const acdb=full.acdbSource;
   const sourceLinks=`<p><a class="source-link" href="https://shikimori.one${esc(full.url||c.url||`/characters/${c.id}`)}" target="_blank" rel="noreferrer">Страница персонажа на Shikimori ↗</a>${acdb?` · <a class="source-link" href="${esc(acdb.url)}" target="_blank" rel="noreferrer">Связи ACDB ↗</a>`:''}</p>`;
   const diag=full.acdbDiagnostics;
-  const acdbStatus=diag?`<p class="acdb-status">${diag.error?`ACDB: ошибка загрузки — ${esc(diag.error)}`:diag.message?`ACDB: ${esc(diag.message)}`:`ACDB: персонаж ${acdb?'найден':'не сопоставлен'}, связей получено: ${Number(diag.relationRowsParsed||0)}.`}</p>`:'';
+  const acdbStatus=diag?`<p class="acdb-status">${diag.error?`ACDB временно недоступна — ${esc(diag.error)}. Продолжаю показывать связи, найденные в Shikimori.`:diag.message?`ACDB: ${esc(diag.message)}`:`ACDB: персонаж ${acdb?'найден':'не сопоставлен'}, связей получено: ${Number(diag.relationRowsParsed||0)}.`}</p>`:'';
   $('#modalContent').innerHTML=`<div class="profile"><img src="${esc(imageUrl(full.image||c.image,'original')||fallback)}" onerror="this.src='${fallback}'" alt=""><div><div class="eyebrow">CHARACTER PROFILE</div><h2 id="modalName">${esc(full.russian||c.russian||full.name||c.name)}</h2><div class="native">${esc(full.name||c.name||'')}</div><p class="description">${esc(desc)}</p>${sourceLinks}${acdbStatus}</div></div>${renderFamilyTree(c,full)}`;
   bindFamilyTreeClicks();
 }
