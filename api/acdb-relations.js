@@ -21,11 +21,11 @@ function familyKind(label='') {
   const s = norm(label);
   // Match whole relation words/phrases only. Substring checks such as "mat"
   // incorrectly classify "information" as "mother".
-  if (/(^|\\b)(father|mother|parent|dad|mom|mama|papa|otec|roditel)(\\b|$)|мать|мама|отец|папа|родител/.test(s)) return 'parent';
-  if (/(^|\\b)(son|daughter|child|children)(\\b|$)|сын|дочь|дочер|сынов|ребен|дети/.test(s)) return 'child';
-  if (/(^|\\b)(brother|sister|sibling)(\\b|$)|брат|сестр/.test(s)) return 'sibling';
-  if (/(^|\\b)(husband|wife|spouse|married|boyfriend|girlfriend|partner)(\\b|$)|муж|жен|супруг/.test(s)) return 'partner';
-  if (/(^|\\b)(uncle|aunt|nephew|niece|cousin|grandfather|grandmother|grandson|granddaughter|grandparent|grandchild|step|adopt|relative)(\\b|$)|дяд|тет|племян|двоюрод|дед|баб|внук|внуч|прием|приём|сводн/.test(s)) return 'other';
+  if (/(^|\b)(father|mother|parent|dad|mom|mama|papa|otec|roditel)(\b|$)|мать|мама|отец|папа|родител/.test(s)) return 'parent';
+  if (/(^|\b)(son|daughter|child|children)(\b|$)|сын|дочь|дочер|сынов|ребен|дети/.test(s)) return 'child';
+  if (/(^|\b)(brother|sister|sibling)(\b|$)|брат|сестр/.test(s)) return 'sibling';
+  if (/(^|\b)(husband|wife|spouse|married|boyfriend|girlfriend|partner)(\b|$)|муж|жен|супруг/.test(s)) return 'partner';
+  if (/(^|\b)(uncle|aunt|nephew|niece|cousin|grandfather|grandmother|grandson|granddaughter|grandparent|grandchild|step|adopt|relative)(\b|$)|дяд|тет|племян|двоюрод|дед|баб|внук|внуч|прием|приём|сводн/.test(s)) return 'other';
   return null;
 }
 function relationSide(label='') {
@@ -132,7 +132,7 @@ module.exports = async (req, res) => {
       source: 'Anime Characters Database', matched: true,
       character: { id: String(chosen.id), name: chosen.name, anime: chosen.anime_name || '', image: chosen.character_image || extractImage(html), url: `${BASE}/characters.php?id=${chosen.id}`, graphUrl: `${BASE}/relationsgraph.php?id=${chosen.id}&nested=` },
       relations: nodes,
-      diagnostics: { profileFetched: true, relationRowsParsed: nodes.length, parser: 'li+anchor-fallback+full-profile-fallback' },
+      diagnostics: { profileFetched: true, relationRowsParsed: nodes.length, parser: 'li+anchor-fallback' },
       note: 'Связи взяты из пользовательской базы ACDB; проверяй контекст и версию персонажа.'
     });
   } catch (e) {
