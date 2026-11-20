@@ -58,3 +58,11 @@ Note: this update improves extraction when ACDB contains a relation; it cannot i
 - ACDB remains an optional source. HTTP 503 is an upstream ACDB availability error and does not prevent Shikimori-based family extraction.
 
 The related-title endpoint is limited to relations Shikimori publishes. It does not infer that an unrelated OVA or filler episode belongs to a franchise if Shikimori has no relation entry.
+
+
+## Family tree precision fix (V3)
+
+- Kinship is now accepted only when a relation term is grammatically adjacent to a matched character name or explicit Shikimori character link. General words elsewhere in a biography cannot turn an unrelated character into a parent.
+- ACDB relation labels are matched as whole words/phrases. The previous substring test could interpret the letters `mat` inside `information` as `mother`, producing false parents such as Masumi Shirase.
+- Removed the unsafe last-resort scan of arbitrary links across the entire ACDB profile; only structured relation rows and relation-section fallback are used.
+- Repeated character links in the "mentioned" section are deduplicated.
