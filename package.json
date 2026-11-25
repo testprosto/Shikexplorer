@@ -4,7 +4,7 @@
   "private": true,
   "description": "Search anime and manga on Shikimori and explore their characters and family relations",
   "engines": {
-    "node": "20.x"
+    "node": "26.x"
   },
   "scripts": {
     "start": "node server.js",
