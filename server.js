@@ -6,7 +6,7 @@ const { URL } = require('url');
 
 const PORT = process.env.PORT || 3000;
 const PUBLIC_DIR = path.resolve(__dirname, 'public');
-const API_DIR = path.resolve(__dirname, 'api');
+const API_DIR = path.resolve(__dirname, 'lib', 'api');
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',

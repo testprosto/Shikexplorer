@@ -1,8 +1,12 @@
 {
   "version": 2,
   "functions": {
-    "api/*.js": {
-      "includeFiles": "kinship_catalog_data.json"
+    "api/index.js": {
+      "includeFiles": "kinship_catalog_data.json",
+      "maxDuration": 15
     }
-  }
+  },
+  "rewrites": [
+    { "source": "/api/:endpoint*", "destination": "/api?__endpoint=:endpoint*" }
+  ]
 }
