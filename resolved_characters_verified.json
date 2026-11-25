@@ -1,0 +1,770 @@
+{
+  "Linlin Charlotte": {
+    "id": 54495,
+    "name": "Linlin Charlotte",
+    "russian": "Линлин Шарлотта",
+    "image": "/system/characters/preview/54495.jpg?1717793344"
+  },
+  "Katakuri Charlotte": {
+    "id": 150775,
+    "name": "Katakuri Charlotte",
+    "russian": "Катакури Шарлотта",
+    "image": "/system/characters/preview/150775.jpg?1718486382"
+  },
+  "Perospero Charlotte": {
+    "id": 153794,
+    "name": "Perospero Charlotte",
+    "russian": "Перосперо Шарлотта",
+    "image": "/system/characters/preview/153794.jpg?1718661890"
+  },
+  "Cracker Charlotte": {
+    "id": 153725,
+    "name": "Cracker Charlotte",
+    "russian": "Крекер Шарлотта",
+    "image": "/system/characters/preview/153725.jpg?1718573334"
+  },
+  "Smoothie Charlotte": {
+    "id": 154258,
+    "name": "Smoothie Charlotte",
+    "russian": "Смузи Шарлотта",
+    "image": "/system/characters/preview/154258.jpg?1718831374"
+  },
+  "Pudding Charlotte": {
+    "id": 149813,
+    "name": "Pudding Charlotte",
+    "russian": "Пудинг Шарлотта",
+    "image": "/system/characters/preview/149813.jpg?1718745411"
+  },
+  "Brulee Charlotte": {
+    "id": 152902,
+    "name": "Brûlée Charlotte",
+    "russian": "Брюле Шарлотта",
+    "image": "/system/characters/preview/152902.jpg?1718226786"
+  },
+  "Oven Charlotte": {
+    "id": 156133,
+    "name": "Oven Charlotte",
+    "russian": "Овен Шарлотта",
+    "image": "/system/characters/preview/156133.jpg?1718486476"
+  },
+  "Daifuku Charlotte": {
+    "id": 156134,
+    "name": "Daifuku Charlotte",
+    "russian": "Дайфуку Шарлотта",
+    "image": "/system/characters/preview/156134.jpg?1718226894"
+  },
+  "Compote Charlotte": {
+    "id": 158085,
+    "name": "Compote Charlotte",
+    "russian": "Компот Шарлотта",
+    "image": "/system/characters/preview/158085.jpg?1718226824"
+  },
+  "Luffy Monkey D.": {
+    "id": 40,
+    "name": "Luffy Monkey D.",
+    "russian": "Луффи Монки Д.",
+    "image": "/system/characters/preview/40.jpg?1718830202"
+  },
+  "Dragon Monkey D.": {
+    "id": 4884,
+    "name": "Dragon Monkey D.",
+    "russian": "Драгон Монки Д.",
+    "image": "/system/characters/preview/4884.jpg?1718398302"
+  },
+  "Garp Monkey D.": {
+    "id": 8064,
+    "name": "Garp Monkey D.",
+    "russian": "Гарп Монки Д.",
+    "image": "/system/characters/preview/8064.jpg?1718659286"
+  },
+  "Ace Portgas D.": {
+    "id": 2072,
+    "name": "Ace Portgas D.",
+    "russian": "Эйс Портгас Д.",
+    "image": "/system/characters/preview/2072.jpg?1718398222"
+  },
+  "Sabo": {
+    "id": 32893,
+    "name": "Sabo",
+    "russian": "Сабо",
+    "image": "/system/characters/preview/32893.jpg?1715637834"
+  },
+  "Edward Newgate": {
+    "id": 2751,
+    "name": "Newgate Edward",
+    "russian": "Ньюгейт Эдвард",
+    "image": "/system/characters/preview/2751.jpg?1718398256"
+  },
+  "Carmel": {
+    "id": 161701,
+    "name": "Carmel",
+    "russian": "Кармель",
+    "image": "/system/characters/preview/161701.jpg?1718486481"
+  },
+  "Bell-mere": {
+    "id": 4890,
+    "name": "Bellemere",
+    "russian": "Бельмере",
+    "image": "/system/characters/preview/4890.jpg?1718484750"
+  },
+  "Nami": {
+    "id": 723,
+    "name": "Nami",
+    "russian": "Нами",
+    "image": "/system/characters/preview/723.jpg?1717706843"
+  },
+  "Naruto Uzumaki": {
+    "id": 17,
+    "name": "Naruto Uzumaki",
+    "russian": "Наруто Узумаки",
+    "image": "/system/characters/preview/17.jpg?1716844024"
+  },
+  "Minato Namikaze": {
+    "id": 2535,
+    "name": "Minato Namikaze",
+    "russian": "Минато Намиказэ",
+    "image": "/system/characters/preview/2535.jpg?1716844307"
+  },
+  "Kushina Uzumaki": {
+    "id": 7302,
+    "name": "Kushina Uzumaki",
+    "russian": "Кушина Узумаки",
+    "image": "/system/characters/preview/7302.jpg?1716844502"
+  },
+  "Hinata Hyuuga": {
+    "id": 1555,
+    "name": "Hinata Hyuuga",
+    "russian": "Хината Хюга",
+    "image": "/system/characters/preview/1555.jpg?1716844172"
+  },
+  "Hanabi Hyuuga": {
+    "id": 12563,
+    "name": "Hanabi Hyuuga",
+    "russian": "Ханаби Хюга",
+    "image": "/system/characters/preview/12563.jpg?1712021386"
+  },
+  "Hiashi Hyuuga": {
+    "id": 15039,
+    "name": "Hiashi Hyuuga",
+    "russian": "Хиаши Хюга",
+    "image": "/system/characters/preview/15039.jpg?1712022403"
+  },
+  "Himawari Uzumaki": {
+    "id": 117789,
+    "name": "Himawari Uzumaki",
+    "russian": "Химавари Узумаки",
+    "image": "/system/characters/preview/117789.jpg?1716846267"
+  },
+  "Boruto Uzumaki": {
+    "id": 117517,
+    "name": "Boruto Uzumaki",
+    "russian": "Боруто  Узумаки",
+    "image": "/system/characters/preview/117517.jpg?1716846282"
+  },
+  "Sasuke Uchiha": {
+    "id": 13,
+    "name": "Sasuke Uchiha",
+    "russian": "Саскэ Учиха",
+    "image": "/system/characters/preview/13.jpg?1716844018"
+  },
+  "Itachi Uchiha": {
+    "id": 14,
+    "name": "Itachi Uchiha",
+    "russian": "Итачи Учиха",
+    "image": "/system/characters/preview/14.jpg?1716844024"
+  },
+  "Fugaku Uchiha": {
+    "id": 16973,
+    "name": "Fugaku Uchiha",
+    "russian": "Фугаку Учиха",
+    "image": "/system/characters/preview/16973.jpg?1716844683"
+  },
+  "Mikoto Uchiha": {
+    "id": 21122,
+    "name": "Mikoto Uchiha",
+    "russian": "Микото Учиха",
+    "image": "/system/characters/preview/21122.jpg?1716844751"
+  },
+  "Sarada Uchiha": {
+    "id": 117791,
+    "name": "Sarada Uchiha",
+    "russian": "Сарада Учиха",
+    "image": "/system/characters/preview/117791.jpg?1716846277"
+  },
+  "Sakura Haruno": {
+    "id": 145,
+    "name": "Sakura Haruno",
+    "russian": "Сакура Харуно",
+    "image": "/system/characters/preview/145.jpg?1716844037"
+  },
+  "Madara Uchiha": {
+    "id": 53901,
+    "name": "Madara Uchiha",
+    "russian": "Мадара Учиха",
+    "image": "/system/characters/preview/53901.jpg?1716845324"
+  },
+  "Izuna Uchiha": {
+    "id": 16406,
+    "name": "Izuna Uchiha",
+    "russian": "Изуна Учиха",
+    "image": "/system/characters/preview/16406.jpg?1712023075"
+  },
+  "Hashirama Senju": {
+    "id": 12464,
+    "name": "Hashirama Senju",
+    "russian": "Хаширама Сэнджу",
+    "image": "/system/characters/preview/12464.jpg?1712021348"
+  },
+  "Tobirama Senju": {
+    "id": 12465,
+    "name": "Tobirama Senju",
+    "russian": "Тобирама Сэнджу",
+    "image": "/system/characters/preview/12465.jpg?1712021375"
+  },
+  "Jiraiya": {
+    "id": 2423,
+    "name": "Jiraiya",
+    "russian": "Джирайя",
+    "image": "/system/characters/preview/2423.jpg?1716844270"
+  },
+  "Nagato": {
+    "id": 45717,
+    "name": "Nagato",
+    "russian": "Нагато",
+    "image": "/system/characters/preview/45717.jpg?1712797685"
+  },
+  "Ichigo Kurosaki": {
+    "id": 5,
+    "name": "Ichigo Kurosaki",
+    "russian": "Ичиго Куросаки",
+    "image": "/system/characters/preview/5.jpg?1715637297"
+  },
+  "Isshin Kurosaki": {
+    "id": 2553,
+    "name": "Isshin Kurosaki",
+    "russian": "Иссин Куросаки",
+    "image": "/system/characters/preview/2553.jpg?1712016869"
+  },
+  "Masaki Kurosaki": {
+    "id": 22849,
+    "name": "Masaki Kurosaki",
+    "russian": "Масаки Куросаки",
+    "image": "/system/characters/preview/22849.jpg?1712025545"
+  },
+  "Karin Kurosaki": {
+    "id": 4018,
+    "name": "Karin Kurosaki",
+    "russian": "Карин Куросаки",
+    "image": "/system/characters/preview/4018.jpg?1712017720"
+  },
+  "Yuzu Kurosaki": {
+    "id": 1096,
+    "name": "Yuzu Kurosaki",
+    "russian": "Юдзу Куросаки",
+    "image": "/system/characters/preview/1096.jpg?1712093484"
+  },
+  "Orihime Inoue": {
+    "id": 7,
+    "name": "Orihime Inoue",
+    "russian": "Орихимэ Иноуэ",
+    "image": "/system/characters/preview/7.jpg?1716242855"
+  },
+  "Kazui Kurosaki": {
+    "id": 143634,
+    "name": "Kazui Kurosaki",
+    "russian": "Кадзуи Куросаки",
+    "image": "/system/characters/preview/143634.jpg?1712810929"
+  },
+  "Souken Ishida": {
+    "id": 22844,
+    "name": "Souken Ishida",
+    "russian": "Сокэн Исида",
+    "image": "/system/characters/preview/22844.jpg?1712025538"
+  },
+  "Uryuu Ishida": {
+    "id": 564,
+    "name": "Uryuu Ishida",
+    "russian": "Урю Исида",
+    "image": "/system/characters/preview/564.jpg?1715720357"
+  },
+  "Rukia Kuchiki": {
+    "id": 6,
+    "name": "Rukia Kuchiki",
+    "russian": "Рукия Кучики",
+    "image": "/system/characters/preview/6.jpg?1715637289"
+  },
+  "Renji Abarai": {
+    "id": 906,
+    "name": "Renji Abarai",
+    "russian": "Рэндзи Абараи",
+    "image": "/system/characters/preview/906.jpg?1715637310"
+  },
+  "Son Goku": {
+    "id": 246,
+    "name": "Gokuu Son",
+    "russian": "Гоку Сон",
+    "image": "/system/characters/preview/246.jpg?1718571788"
+  },
+  "Son Gohan": {
+    "id": 2093,
+    "name": "Gohan Son",
+    "russian": "Гохан Сон",
+    "image": "/system/characters/preview/2093.jpg?1718053938"
+  },
+  "Son Goten": {
+    "id": 2551,
+    "name": "Goten Son",
+    "russian": "Готэн Сон",
+    "image": "/system/characters/preview/2551.jpg?1718398246"
+  },
+  "Chi-Chi": {
+    "id": 2102,
+    "name": "Chi-Chi",
+    "russian": "Чи-Чи",
+    "image": "/system/characters/preview/2102.jpg?1718659043"
+  },
+  "Vegeta": {
+    "id": 913,
+    "name": "Vegeta",
+    "russian": "Веджета",
+    "image": "/system/characters/preview/913.jpg?1718053841"
+  },
+  "Bulma": {
+    "id": 678,
+    "name": "Bulma",
+    "russian": "Бульма",
+    "image": "/system/characters/preview/678.jpg?1718659028"
+  },
+  "Trunks": {
+    "id": 2707,
+    "name": "Trunks",
+    "russian": "Транкс",
+    "image": "/system/characters/preview/2707.jpg?1717793018"
+  },
+  "Eren Yeager": {
+    "id": 40882,
+    "name": "Eren Yeager",
+    "russian": "Эрен Йегер",
+    "image": "/system/characters/preview/40882.jpg?1708821764"
+  },
+  "Grisha Yeager": {
+    "id": 62477,
+    "name": "Grisha Yeager",
+    "russian": "Гриша Йегер",
+    "image": "/system/characters/preview/62477.jpg?1716845483"
+  },
+  "Carla Yeager": {
+    "id": 62475,
+    "name": "Carla Yeager",
+    "russian": "Карла Йегер",
+    "image": "/system/characters/preview/62475.jpg?1708826210"
+  },
+  "Zeke Yeager": {
+    "id": 142314,
+    "name": "Zeke",
+    "russian": "Зик",
+    "image": "/system/characters/preview/142314.jpg?1715639282"
+  },
+  "Izuku Midoriya": {
+    "id": 117909,
+    "name": "Izuku Midoriya",
+    "russian": "Идзуку Мидория",
+    "image": "/system/characters/preview/117909.jpg?1717880356"
+  },
+  "Inko Midoriya": {
+    "id": 139572,
+    "name": "Inko Midoriya",
+    "russian": "Инко Мидория",
+    "image": "/system/characters/preview/139572.jpg?1718573229"
+  },
+  "Shoto Todoroki": {
+    "id": 117917,
+    "name": "Shouto Todoroki",
+    "russian": "Сёто Тодороки",
+    "image": "/system/characters/preview/117917.jpg?1717880362"
+  },
+  "Enji Todoroki": {
+    "id": 141624,
+    "name": "Enji Todoroki",
+    "russian": "Эндзи Тодороки",
+    "image": "/system/characters/preview/141624.jpg?1718745351"
+  },
+  "Rei Todoroki": {
+    "id": 151276,
+    "name": "Rei Todoroki",
+    "russian": "Рэй Тодороки",
+    "image": "/system/characters/preview/151276.jpg?1718573323"
+  },
+  "Toya Todoroki": {
+    "id": 139578,
+    "name": "Dabi",
+    "russian": "Даби (Тоя Тодороки)",
+    "image": "/system/characters/preview/139578.jpg?1718660706"
+  },
+  "Edward Elric": {
+    "id": 11,
+    "name": "Edward Elric",
+    "russian": "Эдвард Элрик",
+    "image": "/system/characters/preview/11.jpg?1712015306"
+  },
+  "Alphonse Elric": {
+    "id": 12,
+    "name": "Alphonse Elric",
+    "russian": "Альфонс Элрик",
+    "image": "/system/characters/preview/12.jpg?1712015323"
+  },
+  "Van Hohenheim": {
+    "id": 9792,
+    "name": "Van Hohenheim",
+    "russian": "Ван Хоэнхайм",
+    "image": "/system/characters/preview/9792.jpg?1712792399"
+  },
+  "Trisha Elric": {
+    "id": 10085,
+    "name": "Trisha Elric",
+    "russian": "Триша Элрик",
+    "image": "/system/characters/preview/10085.jpg?1712020538"
+  },
+  "Thorfinn": {
+    "id": 10138,
+    "name": "Thorfinn",
+    "russian": "Торфинн",
+    "image": "/system/characters/preview/10138.jpg?1717449174"
+  },
+  "Thors": {
+    "id": 13021,
+    "name": "Thors",
+    "russian": "Торс",
+    "image": "/system/characters/preview/13021.jpg?1706565307"
+  },
+  "Ylva": {
+    "id": 27876,
+    "name": "Ylva",
+    "russian": "Ильва",
+    "image": "/system/characters/preview/27876.jpg?1708985013"
+  },
+  "Shinji Ikari": {
+    "id": 89,
+    "name": "Shinji Ikari",
+    "russian": "Синдзи Икари",
+    "image": "/system/characters/preview/89.jpg?1712015355"
+  },
+  "Gendo Ikari": {
+    "id": 1257,
+    "name": "Gendou Ikari",
+    "russian": "Гэндо Икари",
+    "image": "/system/characters/preview/1257.jpg?1712016088"
+  },
+  "Yui Ikari": {
+    "id": 1258,
+    "name": "Yui Ikari",
+    "russian": "Юи Икари",
+    "image": "/system/characters/preview/1258.jpg?1712016075"
+  },
+  "Kagura": {
+    "id": 1369,
+    "name": "Kagura",
+    "russian": "Кагура",
+    "image": "/system/characters/preview/1369.jpg?1712016159"
+  },
+  "Kamui": {
+    "id": 2317,
+    "name": "Kamui",
+    "russian": "Камуи",
+    "image": "/system/characters/preview/2317.jpg?1712016760"
+  },
+  "Umibouzu": {
+    "id": 3424,
+    "name": "Umibouzu",
+    "russian": "Умибодзу",
+    "image": "/system/characters/preview/3424.jpg?1712017406"
+  },
+  "Gon Freecss": {
+    "id": 30,
+    "name": "Gon Freecss",
+    "russian": "Гон Фрикс",
+    "image": "/system/characters/preview/30.jpg?1712015298"
+  },
+  "Ging Freecss": {
+    "id": 26,
+    "name": "Ging Freecss",
+    "russian": "Джин Фрикс",
+    "image": "/system/characters/preview/26.jpg?1712015298"
+  },
+  "Killua Zoldyck": {
+    "id": 27,
+    "name": "Killua Zoldyck",
+    "russian": "Киллуа Золдик",
+    "image": "/system/characters/preview/27.jpg?1712015316"
+  },
+  "Illumi Zoldyck": {
+    "id": 57,
+    "name": "Illumi Zoldyck",
+    "russian": "Иллуми Золдик",
+    "image": "/system/characters/preview/57.jpg?1712015331"
+  },
+  "Silva Zoldyck": {
+    "id": 60,
+    "name": "Silva Zoldyck",
+    "russian": "Сильва Золдик",
+    "image": "/system/characters/preview/60.jpg?1712015336"
+  },
+  "Zeno Zoldyck": {
+    "id": 59,
+    "name": "Zeno Zoldyck",
+    "russian": "Зено Золдик",
+    "image": "/system/characters/preview/59.jpg?1712015329"
+  },
+  "Light Yagami": {
+    "id": 80,
+    "name": "Light Yagami",
+    "russian": "Лайт Ягами",
+    "image": "/system/characters/preview/80.jpg?1712015382"
+  },
+  "Soichiro Yagami": {
+    "id": 1927,
+    "name": "Souichirou Yagami",
+    "russian": "Соитиро Ягами",
+    "image": "/system/characters/preview/1927.jpg?1712016496"
+  },
+  "Sayu Yagami": {
+    "id": 8135,
+    "name": "Sayu Yagami",
+    "russian": "Саю Ягами",
+    "image": "/system/characters/preview/8135.jpg?1712019680"
+  },
+  "Jonathan Joestar": {
+    "id": 8087,
+    "name": "Jonathan Joestar",
+    "russian": "Джонатан Джостар",
+    "image": "/system/characters/preview/8087.jpg?1712019661"
+  },
+  "George Joestar I": {
+    "id": 21956,
+    "name": "George I Joestar",
+    "russian": "Джордж Джостар",
+    "image": "/system/characters/preview/21956.jpg?1712025247"
+  },
+  "Joseph Joestar": {
+    "id": 6356,
+    "name": "Joseph Joestar",
+    "russian": "Джозеф Джостар",
+    "image": "/system/characters/preview/6356.jpg?1712018919"
+  },
+  "Jotaro Kujo": {
+    "id": 4003,
+    "name": "Joutarou Kuujou",
+    "russian": "Джотаро Куджо",
+    "image": "/system/characters/preview/4003.jpg?1716844320"
+  },
+  "Jolyne Cujoh": {
+    "id": 11222,
+    "name": "Jolyne Kuujou",
+    "russian": "Джолин Куджо",
+    "image": "/system/characters/preview/11222.jpg?1716844557"
+  },
+  "Rin Okumura": {
+    "id": 24482,
+    "name": "Rin Okumura",
+    "russian": "Рин Окумура",
+    "image": "/system/characters/preview/24482.jpg?1711054548"
+  },
+  "Yukio Okumura": {
+    "id": 24734,
+    "name": "Yukio Okumura",
+    "russian": "Юкио Окумура",
+    "image": "/system/characters/preview/24734.jpg?1710968506"
+  },
+  "Satan": {
+    "id": 21233,
+    "name": "Satan",
+    "russian": "Сатана",
+    "image": "/system/characters/preview/21233.jpg?1712024971"
+  },
+  "Shiro Fujimoto": {
+    "id": 30431,
+    "name": "Shirou Fujimoto",
+    "russian": "Сиро Фудзимото",
+    "image": "/system/characters/preview/30431.jpg?1711054649"
+  },
+  "Tanjiro Kamado": {
+    "id": 146156,
+    "name": "Tanjirou Kamado",
+    "russian": "Тандзиро Камадо",
+    "image": "/system/characters/preview/146156.jpg?1718056699"
+  },
+  "Nezuko Kamado": {
+    "id": 146157,
+    "name": "Nezuko Kamado",
+    "russian": "Нэдзуко Камадо",
+    "image": "/system/characters/preview/146157.jpg?1718056687"
+  },
+  "Shinobu Kocho": {
+    "id": 146736,
+    "name": "Shinobu Kochou",
+    "russian": "Синобу Котё",
+    "image": "/system/characters/preview/146736.jpg?1718056691"
+  },
+  "Kanae Kocho": {
+    "id": 173733,
+    "name": "Kanae Kochou",
+    "russian": "Канаэ Котё",
+    "image": "/system/characters/preview/173733.jpg?1712068769"
+  },
+  "Lelouch Lamperouge": {
+    "id": 417,
+    "name": "Lelouch Lamperouge",
+    "russian": "Лелуш Ламперуж",
+    "image": "/system/characters/preview/417.jpg?1712015548"
+  },
+  "Nunnally Lamperouge": {
+    "id": 1110,
+    "name": "Nunnally Lamperouge",
+    "russian": "Нанналли Ламперуж",
+    "image": "/system/characters/preview/1110.jpg?1712015984"
+  },
+  "Ai Hoshino": {
+    "id": 188037,
+    "name": "Ai Hoshino",
+    "russian": "Ай Хосино",
+    "image": "/system/characters/preview/188037.jpg?1718058320"
+  },
+  "Aquamarine Hoshino": {
+    "id": 185313,
+    "name": "Aquamarine Hoshino",
+    "russian": "Аквамарин Хосино",
+    "image": "/system/characters/preview/185313.jpg?1718058165"
+  },
+  "Ruby Hoshino": {
+    "id": 186921,
+    "name": "Ruby Hoshino",
+    "russian": "Руби Хосино",
+    "image": "/system/characters/preview/186921.jpg?1718058197"
+  },
+  "Ken Kaneki": {
+    "id": 87275,
+    "name": "Ken Kaneki",
+    "russian": "Кэн Канэки",
+    "image": "/system/characters/preview/87275.jpg?1712042776"
+  },
+  "Touka Kirishima": {
+    "id": 87277,
+    "name": "Touka Kirishima",
+    "russian": "Тока Киришима",
+    "image": "/system/characters/preview/87277.jpg?1712042821"
+  },
+  "Ayato Kirishima": {
+    "id": 105231,
+    "name": "Ayato Kirishima",
+    "russian": "Аято Киришима",
+    "image": "/system/characters/preview/105231.jpg?1712047360"
+  },
+  "Inuyasha": {
+    "id": 1353,
+    "name": "Inuyasha",
+    "russian": "Инуяся",
+    "image": "/system/characters/preview/1353.jpg?1708720551"
+  },
+  "Sesshoumaru": {
+    "id": 1358,
+    "name": "Sesshoumaru",
+    "russian": "Сэссёмару",
+    "image": "/system/characters/preview/1358.jpg?1712016132"
+  },
+  "Rem": {
+    "id": 1905,
+    "name": "Rem",
+    "russian": "Рэм",
+    "image": "/system/characters/preview/1905.jpg?1712016497"
+  },
+  "Ram": {
+    "id": 61787,
+    "name": "Ram",
+    "russian": "Рам",
+    "image": "/system/characters/preview/61787.jpg?1712799694"
+  },
+  "Satoru Gojo": {
+    "id": 164471,
+    "name": "Satoru Gojou",
+    "russian": "Сатору Годзё",
+    "image": "/system/characters/preview/164471.jpg?1713218272"
+  },
+  "Yuji Itadori": {
+    "id": 163847,
+    "name": "Yuuji Itadori",
+    "russian": "Юдзи Итадори",
+    "image": "/system/characters/preview/163847.jpg?1713218257"
+  },
+  "Megumi Fushiguro": {
+    "id": 164470,
+    "name": "Megumi Fushiguro",
+    "russian": "Мэгуми Фусигуро",
+    "image": "/system/characters/preview/164470.jpg?1713218252"
+  },
+  "Maki Zenin": {
+    "id": 164482,
+    "name": "Maki Zenin",
+    "russian": "Маки Дзэнин",
+    "image": "/system/characters/preview/164482.jpg?1713824860"
+  },
+  "Mai Zenin": {
+    "id": 164483,
+    "name": "Mai Zenin",
+    "russian": "Маи Дзэнин",
+    "image": "/system/characters/preview/164483.jpg?1713824855"
+  },
+  "Loid Forger": {
+    "id": 170258,
+    "name": "Loid Forger",
+    "russian": "Лойд Форджер",
+    "image": "/system/characters/preview/170258.jpg?1712438081"
+  },
+  "Yor Forger": {
+    "id": 170329,
+    "name": "Yor Forger",
+    "russian": "Йор Форджер",
+    "image": "/system/characters/preview/170329.jpg?1712438112"
+  },
+  "Anya Forger": {
+    "id": 170256,
+    "name": "Anya Forger",
+    "russian": "Аня Форджер",
+    "image": "/system/characters/preview/170256.jpg?1712524505"
+  },
+  "Guts": {
+    "id": 422,
+    "name": "Guts",
+    "russian": "Гатс",
+    "image": "/system/characters/preview/422.jpg?1716844049"
+  },
+  "Casca": {
+    "id": 423,
+    "name": "Casca",
+    "russian": "Каска",
+    "image": "/system/characters/preview/423.jpg?1716844046"
+  },
+  "Toji Fushiguro": {
+    "id": 175543,
+    "name": "Touji Fushiguro",
+    "russian": "Тодзи Фусигуро",
+    "image": "/system/characters/preview/175543.jpg?1713218760"
+  },
+  "Choso": {
+    "id": 180764,
+    "name": "Chousou",
+    "russian": "Тёсо",
+    "image": "/system/characters/preview/180764.jpg?1713219287"
+  },
+  "Helga": {
+    "id": 171366,
+    "name": "Helga",
+    "russian": "Хельга",
+    "image": "/system/characters/preview/171366.jpg?1708990865"
+  },
+  "Kouka": {
+    "id": 155934,
+    "name": "Kouka",
+    "russian": "Кока",
+    "image": "/system/characters/preview/155934.jpg?1712063185"
+  }
+}

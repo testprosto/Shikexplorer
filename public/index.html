@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="referrer" content="no-referrer" />
+  <meta name="theme-color" content="#07070d" />
+  <meta name="description" content="Интерактивный исследователь аниме, манги и персонажей с автоматическим построением семейных деревьев и живой синхронизацией." />
+  <title>Shikimori Explorer — Персонажи и Семейные Деревья</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://shikimori.one" />
+  <link rel="stylesheet" href="/style.css?v=20261124v7" />
+</head>
+<body>
+  <!-- Ambient background glow effects -->
+  <div class="ambient ambient-one"></div>
+  <div class="ambient ambient-two"></div>
+  <div class="ambient ambient-three"></div>
+
+  <!-- Header / Navigation -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="/" id="brandHome">
+        <span class="brand-mark">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+          </svg>
+        </span>
+        <span class="brand-text">SHIKIMORI<span class="brand-light">EXPLORER</span></span>
+      </a>
+
+      <div class="topbar-meta">
+        <button type="button" class="topbar-btn" id="btnNavKinship" title="Перейти к каталогу семейных уз по типам родства">
+          <span>🧬</span>
+          <span>Семейные узы</span>
+        </button>
+
+        <button type="button" class="topbar-btn" id="btnNavTitles" title="Перейти к каталогу всех аниме Shikimori по страницам">
+          <span>🎬</span>
+          <span>Все аниме</span>
+        </button>
+
+        <button type="button" class="topbar-btn" id="btnKinship" title="Найти цепочку связи между двумя персонажами">
+          <span>🔗</span>
+          <span>Найти связь</span>
+        </button>
+
+        <button type="button" class="topbar-btn" id="btnFavorites" title="Избранные персонажи и тайтлы">
+          <span>⭐</span>
+          <span>Избранное</span>
+          <span id="favCountBadge" class="fav-badge">0</span>
+        </button>
+
+        <button type="button" class="topbar-btn toggle-btn" id="btnSpoilerToggle" title="Скрыть или показать спойлеры в деревьях">
+          <span id="spoilerIcon">🙈</span>
+          <span id="spoilerText">Спойлеры: Скрыты</span>
+        </button>
+
+        <span class="live-badge" title="Режим: Прямые live-запросы в реальном времени">
+          <span class="status-dot"></span>
+          <span>DIRECT LIVE API</span>
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="eyebrow">
+        <span class="status-dot"></span>
+        <span>REAL-TIME CHARACTER GENEALOGY HUB</span>
+      </div>
+      <h1>Найди любой <span>тайтл.</span><br/>Исследуй родословную каждого персонажа.</h1>
+      <p class="hero-copy">
+        Поиск по аниме, манге и ранобэ. Сбор всех персонажей из связанных сезонов, фильмов, OVA и манги с автоматическим построением интерактивного семейного дерева связей (Shikimori + Wikidata + ACDB) в реальном времени.
+      </p>
+
+      <!-- Search Bar -->
+      <form id="searchForm" class="searchbar">
+        <div class="search-icon-wrap">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="11" cy="11" r="7"></circle>
+            <line x1="16.5" y1="16.5" x2="21.5" y2="21.5"></line>
+          </svg>
+        </div>
+        <input id="query" type="search" placeholder="Название на русском, англ. или ромадзи (напр. Naruto, Berserk, Bleach)..." autocomplete="off" minlength="2" required />
+        <button id="clearSearch" type="button" class="btn-clear hidden" title="Очистить" aria-label="Очистить поиск">✕</button>
+        <button id="searchButton" type="submit" class="btn-submit">
+          <span>Найти</span>
+          <span>→</span>
+        </button>
+      </form>
+
+      <!-- Quick Suggestion Pills -->
+      <div class="quick-tags">
+        <span class="quick-title">Популярное:</span>
+        <button type="button" class="quick-tag" data-q="One Piece">🏴‍☠️ One Piece</button>
+        <button type="button" class="quick-tag" data-q="Naruto">🍥 Naruto</button>
+        <button type="button" class="quick-tag" data-q="Attack on Titan">⚔️ Attack on Titan</button>
+        <button type="button" class="quick-tag" data-q="Bleach">🗡️ Bleach</button>
+        <button type="button" class="quick-tag" data-q="Demon Slayer">⚡ Demon Slayer</button>
+        <button type="button" class="quick-tag" data-q="Jujutsu Kaisen">🔮 Jujutsu Kaisen</button>
+        <button type="button" class="quick-tag" data-q="Fullmetal Alchemist">⚗️ FMA</button>
+        <button type="button" class="quick-tag" data-q="Hunter x Hunter">🎯 Hunter x Hunter</button>
+        <button type="button" class="quick-tag" data-q="Death Note">📓 Death Note</button>
+        <button type="button" class="quick-tag" data-q="Spy x Family">🕵️ Spy x Family</button>
+        <button type="button" class="quick-tag" data-q="Berserk">🩸 Berserk</button>
+      </div>
+    </section>
+
+    <!-- Main Application Navigation Tabs Bar -->
+    <nav class="main-tabs-bar" id="mainTabsBar" aria-label="Вкладки разделов сайта">
+      <div class="main-tabs-container">
+        <button type="button" class="main-tab-btn active" data-tab="kinship" title="Сборник родственных связей (мамы, отцы, дети)">
+          <span class="tab-icon">👑</span>
+          <span class="tab-label">Сборник родства</span>
+          <span class="tab-badge">3 850+ узов</span>
+        </button>
+        <button type="button" class="main-tab-btn" data-tab="titles" title="Полномасштабный каталог всех аниме из базы Shikimori">
+          <span class="tab-icon">🎬</span>
+          <span class="tab-label">Все аниме Shikimori</span>
+          <span class="tab-badge">999+ стр.</span>
+        </button>
+        <button type="button" class="main-tab-btn" data-tab="tree" title="Генеалогическое древо и персонажи выбранного тайтла">
+          <span class="tab-icon">🌳</span>
+          <span class="tab-label">Древо и персонажи</span>
+        </button>
+        <button type="button" class="main-tab-btn" data-tab="finder" title="Поиск родственной связи между любыми двумя персонажами">
+          <span class="tab-icon">🔗</span>
+          <span class="tab-label">Найти связь</span>
+        </button>
+        <button type="button" class="main-tab-btn" data-tab="favorites" title="Ваши закладки и сохраненные персонажи">
+          <span class="tab-icon">⭐</span>
+          <span class="tab-label">Избранное</span>
+          <span class="tab-badge" id="tabFavCount">0</span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- Kinship Explorer / Across-Anime Catalog Section (Live API Browser with Pagination) -->
+    <section id="kinshipCatalogSection" class="kinship-catalog-section">
+      <div class="section-head kinship-catalog-head">
+        <div>
+          <div class="eyebrow"><span class="status-dot"></span> ТЕМАТИЧЕСКИЙ СБОРНИК РОДСТВЕННИКОВ · ВСЕ СУЩЕСТВУЮЩИЕ ТАЙТЛЫ SHIKIMORI</div>
+          <h2>Сборник «Мамы, отцы и семейные узы в аниме»</h2>
+          <p class="section-desc">Полномасштабный сборник по персонажам (как в коллекции Shikimori «Мамы в аниме и манге»), но охватывающий <strong>ВООБЩЕ ВСЕ существующие тайтлы</strong> базы с постраничным листанием.</p>
+        </div>
+        <div class="kinship-catalog-tools">
+          <div class="titles-filter-controls">
+            <select id="kinshipOrder" class="kinship-anime-select titles-catalog-select" title="Сортировка связей">
+              <option value="default">🔥 По умолчанию</option>
+              <option value="anime">🎬 По названию тайтла</option>
+              <option value="name">🔤 По имени персонажа</option>
+              <option value="tag">🧬 По типу родства</option>
+            </select>
+            <select id="kinshipAnimeFilter" class="kinship-anime-select titles-catalog-select" title="Фильтр по аниме франшизе">
+              <option value="all">🎬 Все тайтлы (Загрузка...)</option>
+            </select>
+          </div>
+          <div class="search-input-wrap">
+            <input id="kinshipCatalogSearch" type="search" placeholder="Поиск персонажа или аниме..." />
+          </div>
+          <span id="kinshipTotalBadge" class="badge-count">Страница 1</span>
+        </div>
+      </div>
+
+      <!-- Kinship Tags Filter Bar -->
+      <div class="kinship-tags-bar" id="kinshipTagsBar">
+        <button type="button" class="kinship-tag-btn active" data-tag="all">🌐 Все связи</button>
+        <button type="button" class="kinship-tag-btn" data-tag="mother_son">👑 Мамы в аниме</button>
+        <button type="button" class="kinship-tag-btn" data-tag="father_son">⚡ Отцы в аниме</button>
+        <button type="button" class="kinship-tag-btn" data-tag="brother_sister">🤝 Брат и сестра</button>
+        <button type="button" class="kinship-tag-btn" data-tag="brothers">⚔️ Братья</button>
+        <button type="button" class="kinship-tag-btn" data-tag="sisters">🌸 Сёстры</button>
+        <button type="button" class="kinship-tag-btn" data-tag="spouses">💍 Муж и жена</button>
+        <button type="button" class="kinship-tag-btn" data-tag="mother_daughter">🌷 Мать и дочь</button>
+        <button type="button" class="kinship-tag-btn" data-tag="father_daughter">🎀 Отец и дочь</button>
+        <button type="button" class="kinship-tag-btn" data-tag="grandparent">📜 Дедушка и внук</button>
+        <button type="button" class="kinship-tag-btn" data-tag="adoptive">🧬 Приёмная семья</button>
+        <button type="button" class="kinship-tag-btn" data-tag="clans">🏛️ Кланы и династии</button>
+      </div>
+
+      <!-- Loading State -->
+      <div id="kinshipCatalogLoading" class="titles-catalog-loading hidden">
+        <div class="spinner"></div>
+        <span>Загрузка семейных связей...</span>
+      </div>
+
+      <!-- Kinship Cards Grid -->
+      <div id="kinshipCatalogGrid" class="kinship-catalog-grid"></div>
+
+      <!-- Pagination Controls -->
+      <div id="kinshipPagination" class="kinship-pagination-wrap"></div>
+    </section>
+
+    <!-- All Anime Catalog Section (Shikimori Live API Browser with Pagination) -->
+    <section id="titlesCatalogSection" class="titles-catalog-section">
+      <div class="section-head titles-catalog-head">
+        <div>
+          <div class="eyebrow"><span class="status-dot"></span> БАЗА SHIKIMORI · ВСЕ АНИМЕ</div>
+          <h2>Каталог всех аниме по страницам</h2>
+          <p class="section-desc">Листайте абсолютно любые тайтлы из базы данных Shikimori, выбирайте формат и сортировку, открывайте персонажей и генеалогические древа.</p>
+        </div>
+        <div class="titles-catalog-tools">
+          <div class="titles-filter-controls">
+            <select id="titlesCatalogOrder" class="kinship-anime-select titles-catalog-select" title="Сортировка аниме">
+              <option value="popularity">🔥 По популярности</option>
+              <option value="ranked">⭐ По рейтингу</option>
+              <option value="aired_on">📅 По дате премьеры</option>
+              <option value="name">🔤 По алфавиту</option>
+            </select>
+            <select id="titlesCatalogKind" class="kinship-anime-select titles-catalog-select" title="Формат тайтла">
+              <option value="all">🎬 Все форматы</option>
+              <option value="tv">📺 TV Сериалы</option>
+              <option value="movie">🎥 Фильмы</option>
+              <option value="ova">💿 OVA</option>
+              <option value="ona">🌐 ONA</option>
+            </select>
+          </div>
+          <div class="search-input-wrap">
+            <input id="titlesCatalogSearch" type="search" placeholder="Поиск по всей базе аниме..." />
+          </div>
+          <span id="titlesCatalogBadge" class="badge-count">Страница 1</span>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div id="titlesCatalogLoading" class="titles-catalog-loading hidden">
+        <div class="spinner"></div>
+        <span>Загрузка аниме из Shikimori...</span>
+      </div>
+
+      <!-- Anime Cards Grid -->
+      <div id="titlesCatalogGrid" class="title-grid titles-catalog-grid"></div>
+
+      <!-- Pagination Controls -->
+      <div id="titlesCatalogPagination" class="kinship-pagination-wrap"></div>
+    </section>
+
+    <!-- Global Dynamic Status / Toast -->
+    <div id="statusWrap" class="status-wrap hidden">
+      <div id="status" class="status" aria-live="polite"></div>
+    </div>
+
+    <!-- Search Results Section -->
+    <section id="resultsSection" class="results-section hidden">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">РЕЗУЛЬТАТЫ ПОИСКА</div>
+          <h2>Выберите тайтл для анализа</h2>
+        </div>
+        <span id="resultCount" class="badge-count"></span>
+      </div>
+      <div id="results" class="title-grid"></div>
+    </section>
+
+    <!-- Title Detail & Character Database Section -->
+    <section id="titleSection" class="title-section hidden">
+      <!-- Title Hero Header -->
+      <div id="titleHero" class="title-hero"></div>
+
+      <!-- Franchise Timeline / Browser -->
+      <section class="franchise-section">
+        <div class="section-head franchise-head">
+          <div>
+            <div class="eyebrow">ВСЯ ФРАНШИЗА И СВЯЗАННЫЕ ТАЙТЛЫ</div>
+            <h2>Части истории</h2>
+          </div>
+          <span class="tree-source-note">Сезоны · Фильмы · OVA · Specials · Манга</span>
+        </div>
+
+        <!-- Franchise Sync Progress Bar -->
+        <div id="franchiseLoading" class="franchise-loading-card hidden">
+          <div class="franchise-load-top">
+            <div>
+              <div class="eyebrow"><span class="pulse"></span> СИНХРОНИЗАЦИЯ ФРАНШИЗЫ</div>
+              <h4 id="franchiseLoadTitle">Загрузка связанных частей…</h4>
+              <p id="franchiseLoadText">Поиск сезонов, фильмов и манги...</p>
+            </div>
+            <span id="franchiseLoadPct" class="franchise-load-pct">0%</span>
+          </div>
+          <div class="progress-track">
+            <div id="franchiseLoadFill" class="progress-fill"></div>
+          </div>
+        </div>
+
+        <div id="franchiseTitles" class="franchise-list"></div>
+      </section>
+
+      <!-- Characters Section -->
+      <div class="section-head character-head">
+        <div>
+          <div class="eyebrow">БАЗА ПЕРСОНАЖЕЙ</div>
+          <h2>Персонажи франшизы</h2>
+        </div>
+        <div class="character-tools">
+          <div class="role-filters">
+            <button type="button" class="role-filter active" data-role="all">Все</button>
+            <button type="button" class="role-filter" data-role="main">Главные</button>
+            <button type="button" class="role-filter" data-role="supporting">Второстепенные</button>
+          </div>
+          <div class="search-input-wrap">
+            <input id="characterFilter" type="search" placeholder="Поиск по имени персонажа..." />
+          </div>
+          <span id="characterCount" class="badge-count">0</span>
+        </div>
+      </div>
+
+      <!-- Clan & Family Quick Filters -->
+      <div id="clanFiltersWrap" class="clan-filters-wrap hidden">
+        <span class="clan-title">Кланы и фамилии:</span>
+        <div id="clanFilters" class="clan-chips"></div>
+      </div>
+
+      <div id="characters" class="character-grid"></div>
+      <div id="emptyCharacters" class="empty hidden">
+        <p>По заданным критериям персонажи не найдены.</p>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-left">
+        <strong>Shikimori Explorer</strong> — интерактивный исследователь персонажей и родословных связей.
+        <div>
+          Источники данных: <a href="https://shikimori.one" target="_blank" rel="noreferrer">Shikimori API</a> · <a href="https://www.wikidata.org" target="_blank" rel="noreferrer">Wikidata</a> · <a href="https://www.animecharactersdatabase.com" target="_blank" rel="noreferrer">ACDB</a>.
+        </div>
+      </div>
+      <div class="footer-right">
+        <span>Прямые запросы без кэширования · Realtime Live Mode</span>
+      </div>
+    </footer>
+  </main>
+
+  <!-- Interactive Character Modal -->
+  <div id="modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalName">
+    <div class="modal-backdrop" data-close="true"></div>
+    <article class="modal-card">
+      <header class="modal-header">
+        <div id="modalNav" class="modal-nav"></div>
+        <div class="modal-actions">
+          <button type="button" class="modal-action-btn" id="btnFavModal" title="Добавить в избранное">⭐ В избранное</button>
+          <button type="button" class="modal-action-btn" id="btnExportPng" title="Скачать родословное дерево как изображение (PNG)">📷 Экспорт PNG</button>
+          <button id="closeModal" class="btn-close" aria-label="Закрыть окно">✕</button>
+        </div>
+      </header>
+      <div id="modalContent" class="modal-body"></div>
+    </article>
+  </div>
+
+  <!-- Kinship Path Modal (Кем они приходятся друг другу) -->
+  <div id="kinshipModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="kinshipTitle">
+    <div class="modal-backdrop" data-close="kinship"></div>
+    <article class="modal-card kinship-card">
+      <header class="modal-header">
+        <h3 id="kinshipTitle">🔗 Поиск родственной связи между двумя персонажами</h3>
+        <button id="closeKinshipModal" class="btn-close" aria-label="Закрыть">✕</button>
+      </header>
+      <div class="modal-body kinship-body">
+        <p class="kinship-desc">
+          Введите имена двух персонажей или выберите пример. Алгоритм найдёт подтверждённую цепочку родства между ними.
+        </p>
+        
+        <div class="kinship-presets">
+          <span class="quick-title">Примеры для проверки:</span>
+          <button type="button" class="preset-tag" data-a="Naruto Uzumaki" data-b="Hinata Hyuuga">🍥 Naruto ⇆ Hinata (Супруги)</button>
+          <button type="button" class="preset-tag" data-a="Naruto Uzumaki" data-b="Minato Namikaze">⚡ Naruto ⇆ Minato (Отец и сын)</button>
+          <button type="button" class="preset-tag" data-a="Sasuke Uchiha" data-b="Itachi Uchiha">⚔️ Sasuke ⇆ Itachi (Братья)</button>
+        </div>
+
+        <div class="kinship-form">
+          <div class="kinship-field">
+            <label for="kinshipA">Персонаж 1 (Начало):</label>
+            <input id="kinshipA" list="rosterList" placeholder="Например: Naruto..." />
+          </div>
+          <div class="kinship-arrow">⇆</div>
+          <div class="kinship-field">
+            <label for="kinshipB">Персонаж 2 (Цель):</label>
+            <input id="kinshipB" list="rosterList" placeholder="Например: Hinata..." />
+          </div>
+          <button type="button" id="btnFindKinship" class="btn-submit kinship-submit">Найти связь →</button>
+        </div>
+        <datalist id="rosterList"></datalist>
+        <div id="kinshipResult" class="kinship-result-wrap hidden"></div>
+      </div>
+    </article>
+  </div>
+
+  <!-- Favorites Modal -->
+  <div id="favoritesModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="favoritesTitle">
+    <div class="modal-backdrop" data-close="favorites"></div>
+    <article class="modal-card fav-modal-card">
+      <header class="modal-header">
+        <h3 id="favoritesTitle">⭐ Избранные персонажи</h3>
+        <div class="modal-actions">
+          <button type="button" id="btnClearFavorites" class="btn-link-danger">Очистить всё</button>
+          <button id="closeFavoritesModal" class="btn-close" aria-label="Закрыть">✕</button>
+        </div>
+      </header>
+      <div class="modal-body">
+        <div id="favoritesList" class="favorites-grid"></div>
+        <div id="emptyFavorites" class="empty hidden">
+          <p>В избранном пока ничего нет. Нажмите «⭐ В избранное» в карточке персонажа.</p>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <!-- Scroll to Top Button -->
+  <button id="scrollTopBtn" class="scroll-top-btn hidden" title="Наверх" aria-label="Прокрутить наверх">↑</button>
+
+  <script src="/app.js?v=20261125v4" defer></script>
+</body>
+</html>
