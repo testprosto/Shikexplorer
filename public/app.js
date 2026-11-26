@@ -19,8 +19,20 @@ const state = {
   activeRoleFilter: 'all', // 'all' | 'main' | 'supporting'
   activeClanFilter: null,
   favorites: JSON.parse(localStorage.getItem('se_favs') || '[]'),
-  spoilersHidden: localStorage.getItem('se_spoilers') !== 'false'
+  spoilersHidden: localStorage.getItem('se_spoilers') !== 'false',
+  nsfwBlurred: localStorage.getItem('se_nsfw_blur') !== 'false'
 };
+
+function applyNsfwState() {
+  const isBlurred = state.nsfwBlurred;
+  const btn = $('#btnNsfwToggle');
+  const icon = $('#nsfwIcon');
+  const text = $('#nsfwText');
+  if (btn) btn.classList.toggle('active', !isBlurred);
+  if (icon) icon.textContent = isBlurred ? '🔞' : '👀';
+  if (text) text.textContent = isBlurred ? '18+: Размыто' : '18+: Показано';
+  document.body.classList.toggle('nsfw-unblurred', !isBlurred);
+}
 
 function debounce(fn, ms = 75) {
   let timer;
@@ -2600,6 +2612,9 @@ function renderWikidataProfile(full, data) {
     ${full.acdbSource ? ` · <a class="source-link" href="${esc(full.acdbSource.url)}" target="_blank" rel="noreferrer">Связи ACDB ↗</a>` : ''}
   `;
 
+  const animeTitle = ch.anime || state.selectedAnime?.russian || state.selectedAnime?.name || '';
+  const animeId = state.selectedAnime?.id || null;
+
   $('#modalContent').innerHTML = `
     <div class="profile">
       <div class="profile-poster-wrap">
@@ -2609,6 +2624,20 @@ function renderWikidataProfile(full, data) {
         <div class="eyebrow"><span class="pulse"></span> ПРОФИЛЬ ПЕРСОНАЖА · WIKIDATA</div>
         <h2 id="modalName">${esc(full.name)}</h2>
         <div class="native">${esc(ch.anime || '')}</div>
+        ${animeTitle ? `
+          <div class="character-origin-banner">
+            <div class="origin-banner-info">
+              <span class="origin-icon">🎬</span>
+              <div class="origin-text-wrap">
+                <span class="origin-sub">ИЗ АНИМЕ / ТАЙТЛА:</span>
+                <h4 class="origin-title">${esc(animeTitle)}</h4>
+              </div>
+            </div>
+            <button type="button" class="btn-origin-tree" data-anime-id="${animeId || ''}" data-anime-name="${esc(animeTitle)}" data-anime-ru="${esc(animeTitle)}">
+              🌳 Древо тайтла →
+            </button>
+          </div>
+        ` : ''}
         <div class="description">${esc(ch.description || 'Описание в Wikidata отсутствует.')}</div>
         <div class="profile-links">${links}</div>
       </div>
@@ -2624,6 +2653,8 @@ function renderExternalProfile(full, data) {
   applySpoilerState();
   updateModalFavButton();
   const title = full.name || 'Персонаж';
+  const animeTitle = data.character?.anime || state.selectedAnime?.russian || state.selectedAnime?.name || '';
+  const animeId = state.selectedAnime?.id || null;
 
   $('#modalContent').innerHTML = `
     <div class="profile">
@@ -2634,6 +2665,20 @@ function renderExternalProfile(full, data) {
         <div class="eyebrow"><span class="pulse"></span> ПРОФИЛЬ ПЕРСОНАЖА · ACDB</div>
         <h2 id="modalName">${esc(title)}</h2>
         <div class="native">${esc(data.character?.anime || '')}</div>
+        ${animeTitle ? `
+          <div class="character-origin-banner">
+            <div class="origin-banner-info">
+              <span class="origin-icon">🎬</span>
+              <div class="origin-text-wrap">
+                <span class="origin-sub">ИЗ АНИМЕ / ТАЙТЛА:</span>
+                <h4 class="origin-title">${esc(animeTitle)}</h4>
+              </div>
+            </div>
+            <button type="button" class="btn-origin-tree" data-anime-id="${animeId || ''}" data-anime-name="${esc(animeTitle)}" data-anime-ru="${esc(animeTitle)}">
+              🌳 Древо тайтла →
+            </button>
+          </div>
+        ` : ''}
         <div class="description">Профиль и родственные связи получены из Anime Characters Database (пользовательская база персонажей).</div>
         <div class="profile-links">
           <a class="source-link" href="${esc(full.url || '#')}" target="_blank" rel="noreferrer">Открыть профиль ACDB ↗</a>
@@ -2662,6 +2707,26 @@ function renderShikimoriProfile(c, full) {
     </div>
   `;
 
+  const primaryAnime = (full.animes && full.animes[0]) || (c.animes && c.animes[0]) || null;
+  const animeTitleRu = c.animeRu || full.animeRu || primaryAnime?.russian || state.selectedAnime?.russian || c.anime || full.anime || primaryAnime?.name || state.selectedAnime?.name || '';
+  const animeTitleName = c.anime || full.anime || primaryAnime?.name || state.selectedAnime?.name || '';
+  const animeId = c.animeId || full.animeId || primaryAnime?.id || state.selectedAnime?.id || null;
+
+  const originBannerHtml = (animeTitleRu || animeTitleName) ? `
+    <div class="character-origin-banner">
+      <div class="origin-banner-info">
+        <span class="origin-icon">🎬</span>
+        <div class="origin-text-wrap">
+          <span class="origin-sub">ИЗ АНИМЕ / ТАЙТЛА:</span>
+          <h4 class="origin-title">${esc(animeTitleRu || animeTitleName)}</h4>
+        </div>
+      </div>
+      <button type="button" class="btn-origin-tree" data-anime-id="${animeId || ''}" data-anime-name="${esc(animeTitleName || animeTitleRu)}" data-anime-ru="${esc(animeTitleRu)}">
+        🌳 Древо тайтла →
+      </button>
+    </div>
+  ` : '';
+
   const diag = full.acdbDiagnostics;
   const acdbStatus = diag ? `
     <div>${diag.error ? `ACDB: ${esc(diag.error)}` : diag.message ? `ACDB: ${esc(diag.message)}` : `ACDB: связей получено: ${Number(diag.relationRowsParsed || 0)}`}</div>
@@ -2683,6 +2748,7 @@ function renderShikimoriProfile(c, full) {
         <div class="eyebrow"><span class="pulse"></span> ПРОФИЛЬ ПЕРСОНАЖА</div>
         <h2 id="modalName">${esc(full.russian || c.russian || full.name || c.name)}</h2>
         <div class="native">${esc(full.name || c.name || '')}</div>
+        ${originBannerHtml}
         <div class="description">${esc(desc)}</div>
         ${sourceLinks}
         ${diagBlock}
@@ -2696,6 +2762,19 @@ function renderShikimoriProfile(c, full) {
 function bindFamilyTreeClicks() {
   const root = $('#modalContent');
   if (!root) return;
+
+  root.querySelectorAll('.btn-origin-tree').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const id = btn.dataset.animeId;
+      const name = btn.dataset.animeName;
+      const ru = btn.dataset.animeRu;
+      $('#modal')?.classList.add('hidden');
+      document.body.style.overflow = '';
+      switchMainTab('tree');
+      selectAnime({ id: Number(id) || id, name, russian: ru || name, media_type: 'anime' });
+    });
+  });
 
   root.querySelectorAll('[data-family-id]').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -6333,75 +6412,198 @@ async function loadKinshipCatalog(targetPage = 1) {
       return;
     }
 
-    grid.innerHTML = items.map(item => {
-      const c1 = item.char1;
-      const c2 = item.char2;
-      const img1 = c1.image ? (imageUrl(c1.image, 'preview') || fallback) : fallback;
-      const img2 = c2 && c2.image ? (imageUrl(c2.image, 'preview') || fallback) : fallback;
+    // Sync view switcher UI buttons
+    document.querySelectorAll('.kinship-view-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.view === kinshipState.viewMode);
+    });
 
-      const isSolo = !c2 || !c2.id;
-      let bodyHtml = '';
+    if (kinshipState.viewMode === 'anime') {
+      const animeGroupsMap = new Map();
+      items.forEach(item => {
+        const key = item.anime || item.animeRu;
+        if (!animeGroupsMap.has(key)) {
+          animeGroupsMap.set(key, {
+            anime: item.anime,
+            animeRu: item.animeRu || item.anime,
+            is18Plus: Boolean(item.is18Plus),
+            items: []
+          });
+        }
+        if (item.is18Plus) animeGroupsMap.get(key).is18Plus = true;
+        animeGroupsMap.get(key).items.push(item);
+      });
 
-      if (isSolo) {
-        bodyHtml = `
-          <div class="kinship-solo-body" style="display: flex; width: 100%;">
-            <button type="button" class="kinship-char-col" data-char-id="${c1.id}" data-char-name="${esc(c1.name)}" data-char-ru="${esc(c1.russian)}" data-char-img="${esc(c1.image)}" style="width: 100%; display: flex; align-items: center; gap: 14px; padding: 10px 14px;" title="Исследовать ветку: ${esc(c1.russian || c1.name)}">
-              <img class="kinship-avatar" src="${esc(img1)}" onerror="if(!this.dataset.proxied){this.dataset.proxied=1;this.src='/api/proxy-image?url='+encodeURIComponent(this.src);}else{this.src='${fallback}';}" style="width: 56px; height: 72px; border-radius: 8px; flex-shrink: 0;" alt="" loading="lazy">
-              <div class="kinship-char-meta" style="flex: 1;">
-                <span class="kinship-char-name" style="font-size: 14.5px; font-weight: 700;">${esc(c1.russian || c1.name)}</span>
-                <span class="kinship-char-orig" style="font-size: 12px;">${esc(c1.name)}</span>
-                <span class="kinship-char-role" style="font-size: 11.5px; color: #fbbf24; margin-top: 4px;">👑 ${esc(c1.role || 'Мать в аниме')}</span>
+      const groups = Array.from(animeGroupsMap.values());
+
+      grid.innerHTML = groups.map(group => {
+        const isGroupNsfw = group.is18Plus;
+        const totalInGroup = group.items.length;
+
+        const pairsHtml = group.items.map(item => {
+          const c1 = item.char1;
+          const c2 = item.char2;
+          const img1 = c1.image ? (imageUrl(c1.image, 'preview') || fallback) : fallback;
+          const img2 = c2 && c2.image ? (imageUrl(c2.image, 'preview') || fallback) : fallback;
+          const isSolo = !c2 || !c2.id;
+          const isItemNsfw = item.is18Plus;
+
+          return `
+            <div class="anime-group-pair-item ${isItemNsfw ? 'is-nsfw-item' : ''}">
+              <div class="anime-group-pair-top">
+                <span class="anime-group-rel-label">${esc(item.relationLabel)}</span>
+                ${isItemNsfw ? '<span class="badge-nsfw-mini">🔞 18+</span>' : ''}
               </div>
-            </button>
+              <div class="anime-group-pair-characters">
+                <button type="button" class="kinship-char-col" data-char-id="${c1.id}" data-char-name="${esc(c1.name)}" data-char-ru="${esc(c1.russian)}" data-char-img="${esc(c1.image)}" data-anime-name="${esc(group.anime)}" data-anime-ru="${esc(group.animeRu)}" title="${esc(c1.russian || c1.name)}">
+                  <div class="kinship-avatar-wrap ${isItemNsfw ? 'nsfw-avatar-wrap' : ''}">
+                    <img class="kinship-avatar" src="${esc(img1)}" onerror="if(!this.dataset.proxied){this.dataset.proxied=1;this.src='/api/proxy-image?url='+encodeURIComponent(this.src);}else{this.src='${fallback}';}" alt="" loading="lazy">
+                    ${isItemNsfw ? '<div class="nsfw-overlay-mini">🔞</div>' : ''}
+                  </div>
+                  <div class="kinship-char-meta">
+                    <span class="kinship-char-name">${esc(c1.russian || c1.name)}</span>
+                    <span class="kinship-char-role">${esc(c1.role || 'Персонаж')}</span>
+                  </div>
+                </button>
+
+                ${!isSolo ? `
+                  <span class="kinship-connector-icon">⇆</span>
+                  <button type="button" class="kinship-char-col" data-char-id="${c2.id}" data-char-name="${esc(c2.name)}" data-char-ru="${esc(c2.russian)}" data-char-img="${esc(c2.image)}" data-anime-name="${esc(group.anime)}" data-anime-ru="${esc(group.animeRu)}" title="${esc(c2.russian || c2.name)}">
+                    <div class="kinship-avatar-wrap ${isItemNsfw ? 'nsfw-avatar-wrap' : ''}">
+                      <img class="kinship-avatar" src="${esc(img2)}" onerror="if(!this.dataset.proxied){this.dataset.proxied=1;this.src='/api/proxy-image?url='+encodeURIComponent(this.src);}else{this.src='${fallback}';}" alt="" loading="lazy">
+                      ${isItemNsfw ? '<div class="nsfw-overlay-mini">🔞</div>' : ''}
+                    </div>
+                    <div class="kinship-char-meta">
+                      <span class="kinship-char-name">${esc(c2.russian || c2.name)}</span>
+                      <span class="kinship-char-role">${esc(c2.role || 'Персонаж')}</span>
+                    </div>
+                  </button>
+                ` : ''}
+              </div>
+              <div class="anime-group-pair-actions">
+                <button type="button" class="kinship-action-btn btn-open-char-tree" data-char-id="${c1.id}" data-char-name="${esc(c1.name)}" data-char-ru="${esc(c1.russian)}" data-char-img="${esc(c1.image)}" data-anime-name="${esc(group.anime)}" data-anime-ru="${esc(group.animeRu)}" title="Древо персонажа">
+                  🌳 Древо ${esc((c1.russian || c1.name).split(' ')[0])} →
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        return `
+          <div class="anime-grand-card ${isGroupNsfw ? 'is-nsfw-grand-card' : ''}" data-anime="${esc(group.anime)}">
+            <div class="anime-grand-header">
+              <div class="anime-grand-title-box">
+                <span class="anime-grand-icon">🎬</span>
+                <div>
+                  <h3 class="anime-grand-name">${esc(group.animeRu)}</h3>
+                  <span class="anime-grand-orig">${esc(group.anime)}</span>
+                </div>
+              </div>
+              <div class="anime-grand-badges">
+                ${isGroupNsfw ? '<span class="badge-nsfw">🔞 18+ Контент</span>' : ''}
+                <span class="badge-count-anime">${totalInGroup} ${totalInGroup === 1 ? 'связь' : (totalInGroup < 5 ? 'связи' : 'связей')}</span>
+              </div>
+            </div>
+
+            <div class="anime-grand-pairs-grid">
+              ${pairsHtml}
+            </div>
+
+            <div class="anime-grand-footer">
+              <button type="button" class="anime-grand-btn btn-open-anime-tree" data-anime="${esc(group.anime)}" data-anime-ru="${esc(group.animeRu)}">
+                🌳 Открыть всё древо ${esc(group.animeRu)} →
+              </button>
+              <button type="button" class="anime-grand-btn secondary btn-filter-anime" data-anime="${esc(group.anime)}">
+                🔍 Все связи тайтла в каталоге
+              </button>
+            </div>
           </div>
         `;
-      } else {
-        bodyHtml = `
-          <div class="kinship-pair-body">
-            <button type="button" class="kinship-char-col" data-char-id="${c1.id}" data-char-name="${esc(c1.name)}" data-char-ru="${esc(c1.russian)}" data-char-img="${esc(c1.image)}" title="Исследовать ветку: ${esc(c1.russian || c1.name)}">
-              <img class="kinship-avatar" src="${esc(img1)}" onerror="if(!this.dataset.proxied){this.dataset.proxied=1;this.src='/api/proxy-image?url='+encodeURIComponent(this.src);}else{this.src='${fallback}';}" alt="" loading="lazy">
-              <div class="kinship-char-meta">
-                <span class="kinship-char-name">${esc(c1.russian || c1.name)}</span>
-                <span class="kinship-char-orig">${esc(c1.name)}</span>
-                <span class="kinship-char-role">${esc(c1.role)}</span>
-              </div>
-            </button>
+      }).join('');
 
-            <span class="kinship-connector-icon" title="Связь подтверждена">⇆</span>
+    } else {
+      grid.innerHTML = items.map(item => {
+        const c1 = item.char1;
+        const c2 = item.char2;
+        const img1 = c1.image ? (imageUrl(c1.image, 'preview') || fallback) : fallback;
+        const img2 = c2 && c2.image ? (imageUrl(c2.image, 'preview') || fallback) : fallback;
 
-            <button type="button" class="kinship-char-col" data-char-id="${c2.id}" data-char-name="${esc(c2.name)}" data-char-ru="${esc(c2.russian)}" data-char-img="${esc(c2.image)}" title="Исследовать ветку: ${esc(c2.russian || c2.name)}">
-              <img class="kinship-avatar" src="${esc(img2)}" onerror="if(!this.dataset.proxied){this.dataset.proxied=1;this.src='/api/proxy-image?url='+encodeURIComponent(this.src);}else{this.src='${fallback}';}" alt="" loading="lazy">
-              <div class="kinship-char-meta">
-                <span class="kinship-char-name">${esc(c2.russian || c2.name)}</span>
-                <span class="kinship-char-orig">${esc(c2.name)}</span>
-                <span class="kinship-char-role">${esc(c2.role)}</span>
+        const isSolo = !c2 || !c2.id;
+        const isNsfw = Boolean(item.is18Plus);
+        let bodyHtml = '';
+
+        if (isSolo) {
+          bodyHtml = `
+            <div class="kinship-solo-body" style="display: flex; width: 100%;">
+              <button type="button" class="kinship-char-col" data-char-id="${c1.id}" data-char-name="${esc(c1.name)}" data-char-ru="${esc(c1.russian)}" data-char-img="${esc(c1.image)}" data-anime-name="${esc(item.anime)}" data-anime-ru="${esc(item.animeRu || item.anime)}" style="width: 100%; display: flex; align-items: center; gap: 14px; padding: 10px 14px;" title="Исследовать ветку: ${esc(c1.russian || c1.name)}">
+                <div class="kinship-avatar-wrap ${isNsfw ? 'nsfw-avatar-wrap' : ''}">
+                  <img class="kinship-avatar" src="${esc(img1)}" onerror="if(!this.dataset.proxied){this.dataset.proxied=1;this.src='/api/proxy-image?url='+encodeURIComponent(this.src);}else{this.src='${fallback}';}" style="width: 56px; height: 72px; border-radius: 8px; flex-shrink: 0;" alt="" loading="lazy">
+                  ${isNsfw ? '<div class="nsfw-overlay-mini">🔞</div>' : ''}
+                </div>
+                <div class="kinship-char-meta" style="flex: 1;">
+                  <span class="kinship-char-name" style="font-size: 14.5px; font-weight: 700;">${esc(c1.russian || c1.name)}</span>
+                  <span class="kinship-char-orig" style="font-size: 12px;">${esc(c1.name)}</span>
+                  <span class="kinship-char-role" style="font-size: 11.5px; color: #fbbf24; margin-top: 4px;">👑 ${esc(c1.role || 'Мать в аниме')}</span>
+                </div>
+              </button>
+            </div>
+          `;
+        } else {
+          bodyHtml = `
+            <div class="kinship-pair-body">
+              <button type="button" class="kinship-char-col" data-char-id="${c1.id}" data-char-name="${esc(c1.name)}" data-char-ru="${esc(c1.russian)}" data-char-img="${esc(c1.image)}" data-anime-name="${esc(item.anime)}" data-anime-ru="${esc(item.animeRu || item.anime)}" title="Исследовать ветку: ${esc(c1.russian || c1.name)}">
+                <div class="kinship-avatar-wrap ${isNsfw ? 'nsfw-avatar-wrap' : ''}">
+                  <img class="kinship-avatar" src="${esc(img1)}" onerror="if(!this.dataset.proxied){this.dataset.proxied=1;this.src='/api/proxy-image?url='+encodeURIComponent(this.src);}else{this.src='${fallback}';}" alt="" loading="lazy">
+                  ${isNsfw ? '<div class="nsfw-overlay-mini">🔞</div>' : ''}
+                </div>
+                <div class="kinship-char-meta">
+                  <span class="kinship-char-name">${esc(c1.russian || c1.name)}</span>
+                  <span class="kinship-char-orig">${esc(c1.name)}</span>
+                  <span class="kinship-char-role">${esc(c1.role)}</span>
+                </div>
+              </button>
+
+              <span class="kinship-connector-icon" title="Связь подтверждена">⇆</span>
+
+              <button type="button" class="kinship-char-col" data-char-id="${c2.id}" data-char-name="${esc(c2.name)}" data-char-ru="${esc(c2.russian)}" data-char-img="${esc(c2.image)}" data-anime-name="${esc(item.anime)}" data-anime-ru="${esc(item.animeRu || item.anime)}" title="Исследовать ветку: ${esc(c2.russian || c2.name)}">
+                <div class="kinship-avatar-wrap ${isNsfw ? 'nsfw-avatar-wrap' : ''}">
+                  <img class="kinship-avatar" src="${esc(img2)}" onerror="if(!this.dataset.proxied){this.dataset.proxied=1;this.src='/api/proxy-image?url='+encodeURIComponent(this.src);}else{this.src='${fallback}';}" alt="" loading="lazy">
+                  ${isNsfw ? '<div class="nsfw-overlay-mini">🔞</div>' : ''}
+                </div>
+                <div class="kinship-char-meta">
+                  <span class="kinship-char-name">${esc(c2.russian || c2.name)}</span>
+                  <span class="kinship-char-orig">${esc(c2.name)}</span>
+                  <span class="kinship-char-role">${esc(c2.role)}</span>
+                </div>
+              </button>
+            </div>
+          `;
+        }
+
+        return `
+          <div class="kinship-pair-card ${isNsfw ? 'is-nsfw-card' : ''}" data-pair-id="${esc(item.id)}">
+            <div class="kinship-card-top">
+              <button type="button" class="kinship-anime-badge" data-anime="${esc(item.anime)}" title="Фильтровать по ${esc(item.animeRu || item.anime)}">
+                🎬 ${esc(item.animeRu || item.anime)}
+              </button>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                ${isNsfw ? '<span class="badge-nsfw">🔞 18+</span>' : ''}
+                <span class="kinship-rel-badge">${esc(item.relationLabel)}</span>
               </div>
-            </button>
+            </div>
+            ${bodyHtml}
+            ${item.note ? `<div class="kinship-card-note">${esc(item.note)}</div>` : ''}
+            <div class="kinship-card-actions">
+              <button type="button" class="kinship-action-btn btn-open-char-tree" data-char-id="${c1.id}" data-char-name="${esc(c1.name)}" data-char-ru="${esc(c1.russian)}" data-char-img="${esc(c1.image)}" data-anime-name="${esc(item.anime)}" data-anime-ru="${esc(item.animeRu || item.anime)}" title="Исследовать древо персонажа">
+                🌳 Древо ${esc((c1.russian || c1.name).split(' ')[0])} →
+              </button>
+              <button type="button" class="kinship-action-btn btn-filter-anime" data-anime="${esc(item.anime)}" title="Показать все связи этого аниме">
+                🎬 Все узы тайтла
+              </button>
+            </div>
           </div>
         `;
-      }
-
-      return `
-        <div class="kinship-pair-card" data-pair-id="${esc(item.id)}">
-          <div class="kinship-card-top">
-            <button type="button" class="kinship-anime-badge" data-anime="${esc(item.anime)}" title="Фильтровать по ${esc(item.animeRu || item.anime)}">
-              🎬 ${esc(item.animeRu || item.anime)}
-            </button>
-            <span class="kinship-rel-badge">${esc(item.relationLabel)}</span>
-          </div>
-          ${bodyHtml}
-          ${item.note ? `<div class="kinship-card-note">${esc(item.note)}</div>` : ''}
-          <div class="kinship-card-actions">
-            <button type="button" class="kinship-action-btn btn-open-char-tree" data-char-id="${c1.id}" data-char-name="${esc(c1.name)}" data-char-ru="${esc(c1.russian)}" data-char-img="${esc(c1.image)}" title="Исследовать древо персонажа">
-              🌳 Древо ${esc((c1.russian || c1.name).split(' ')[0])} →
-            </button>
-            <button type="button" class="kinship-action-btn btn-filter-anime" data-anime="${esc(item.anime)}" title="Показать все связи этого аниме">
-              🎬 Все узы тайтла
-            </button>
-          </div>
-        </div>
-      `;
-    }).join('');
+      }).join('');
+    }
 
     // Action button clicks
     grid.querySelectorAll('.btn-open-char-tree').forEach(btn => {
@@ -6411,8 +6613,19 @@ async function loadKinshipCatalog(targetPage = 1) {
           id: Number(btn.dataset.charId) || btn.dataset.charId,
           name: btn.dataset.charName,
           russian: btn.dataset.charRu,
-          image: btn.dataset.charImg
+          image: btn.dataset.charImg,
+          anime: btn.dataset.animeName,
+          animeRu: btn.dataset.animeRu
         });
+      });
+    });
+
+    grid.querySelectorAll('.btn-open-anime-tree').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const animeName = btn.dataset.anime;
+        const animeRu = btn.dataset.animeRu;
+        switchMainTab('tree');
+        selectAnime({ name: animeName, russian: animeRu || animeName, media_type: 'anime' });
       });
     });
 
@@ -6439,7 +6652,9 @@ async function loadKinshipCatalog(targetPage = 1) {
         const name = btn.dataset.charName;
         const russian = btn.dataset.charRu;
         const image = btn.dataset.charImg;
-        openCharacter({ id: Number(id) || id, name, russian, image });
+        const anime = btn.dataset.animeName;
+        const animeRu = btn.dataset.animeRu;
+        openCharacter({ id: Number(id) || id, name, russian, image, anime, animeRu });
       });
     });
 
@@ -6493,7 +6708,26 @@ async function loadKinshipCatalog(targetPage = 1) {
 // Initial setup
 updateFavBadge();
 applySpoilerState();
+applyNsfwState();
 loadKinshipCatalog(1);
+
+// NSFW 18+ Blur Toggle button in topbar
+document.getElementById('btnNsfwToggle')?.addEventListener('click', () => {
+  state.nsfwBlurred = !state.nsfwBlurred;
+  localStorage.setItem('se_nsfw_blur', state.nsfwBlurred);
+  applyNsfwState();
+});
+
+// Kinship View Switcher (Anime Groups vs Pairs)
+document.getElementById('kinshipViewSwitcher')?.addEventListener('click', (e) => {
+  const btn = e.target.closest('.kinship-view-btn');
+  if (!btn) return;
+  document.querySelectorAll('.kinship-view-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  kinshipState.viewMode = btn.dataset.view || 'anime';
+  localStorage.setItem('se_kinship_view', kinshipState.viewMode);
+  loadKinshipCatalog(1);
+});
 
 // Sort change
 document.getElementById('kinshipOrder')?.addEventListener('change', (e) => {
@@ -6560,6 +6794,7 @@ async function loadTitlesCatalog(targetPage = 1) {
   });
   if (kind && kind !== 'all') params.set('kind', kind);
   if (search) params.set('search', search);
+  if (!state.nsfwBlurred || kind === 'hentai') params.set('censored', 'false');
 
   try {
     const res = await api(`/api/titles?${params.toString()}`);
@@ -6586,12 +6821,15 @@ async function loadTitlesCatalog(targetPage = 1) {
       const year = t.aired_on ? t.aired_on.slice(0, 4) : '';
       const kindLabel = (t.kind || 'TV').toUpperCase();
       const epLabel = t.episodes ? `${t.episodes} эп.` : (t.episodes_aired ? `${t.episodes_aired}+ эп.` : '');
+      const is18 = Boolean(t.is18Plus) || t.kind === 'hentai';
 
       return `
-        <article class="titles-catalog-card" data-catalog-idx="${idx}" title="Открыть тайтл: ${esc(t.russian || t.name)}">
-          <div class="titles-catalog-poster-wrap">
+        <article class="titles-catalog-card ${is18 ? 'is-nsfw' : ''}" data-catalog-idx="${idx}" title="Открыть тайтл: ${esc(t.russian || t.name)}">
+          <div class="titles-catalog-poster-wrap ${is18 ? 'is-nsfw' : ''}">
             <img class="titles-catalog-poster" src="${esc(poster)}" onerror="this.src='${fallback}'" alt="" loading="lazy">
+            ${is18 ? '<span class="titles-catalog-score-badge nsfw-badge">🔞 18+</span>' : ''}
             ${score && score !== '0.0' ? `<span class="titles-catalog-score-badge">★ ${score}</span>` : ''}
+            ${is18 ? '<div class="nsfw-overlay-mini">🔞 18+</div>' : ''}
           </div>
           <div class="titles-catalog-info">
             <h4 class="titles-catalog-name-ru">${esc(t.russian || t.name)}</h4>

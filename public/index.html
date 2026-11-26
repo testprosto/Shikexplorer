@@ -58,6 +58,11 @@
           <span id="spoilerText">Спойлеры: Скрыты</span>
         </button>
 
+        <button type="button" class="topbar-btn toggle-btn" id="btnNsfwToggle" title="Показать или скрыть/размыть 18+ и хентай контент">
+          <span id="nsfwIcon">🔞</span>
+          <span id="nsfwText">18+: Размыто</span>
+        </button>
+
         <span class="live-badge" title="Режим: Прямые live-запросы в реальном времени">
           <span class="status-dot"></span>
           <span>DIRECT LIVE API</span>
@@ -150,6 +155,14 @@
         </div>
         <div class="kinship-catalog-tools">
           <div class="titles-filter-controls">
+            <div class="kinship-view-switcher" id="kinshipViewSwitcher">
+              <button type="button" class="kinship-view-btn active" data-view="anime" title="Сгруппировать по тайтлам (например, все мамы One Piece в одной карточке тайтла)">
+                <span>🗂️ По тайтлам</span>
+              </button>
+              <button type="button" class="kinship-view-btn" data-view="pairs" title="Отображать отдельные карточки каждой пары">
+                <span>🃏 По парам</span>
+              </button>
+            </div>
             <select id="kinshipOrder" class="kinship-anime-select titles-catalog-select" title="Сортировка связей">
               <option value="default">🔥 По умолчанию</option>
               <option value="anime">🎬 По названию тайтла</option>
@@ -170,17 +183,19 @@
       <!-- Kinship Tags Filter Bar -->
       <div class="kinship-tags-bar" id="kinshipTagsBar">
         <button type="button" class="kinship-tag-btn active" data-tag="all">🌐 Все связи</button>
-        <button type="button" class="kinship-tag-btn" data-tag="mother_son">👑 Мамы в аниме</button>
-        <button type="button" class="kinship-tag-btn" data-tag="father_son">⚡ Отцы в аниме</button>
+        <button type="button" class="kinship-tag-btn highlight-gold" data-tag="mother_mc">🌟 Мамы ГГ</button>
+        <button type="button" class="kinship-tag-btn" data-tag="mother_son">👑 Мама и сын</button>
+        <button type="button" class="kinship-tag-btn" data-tag="mother_daughter">🌷 Мать и дочь</button>
         <button type="button" class="kinship-tag-btn" data-tag="brother_sister">🤝 Брат и сестра</button>
         <button type="button" class="kinship-tag-btn" data-tag="brothers">⚔️ Братья</button>
         <button type="button" class="kinship-tag-btn" data-tag="sisters">🌸 Сёстры</button>
-        <button type="button" class="kinship-tag-btn" data-tag="spouses">💍 Муж и жена</button>
-        <button type="button" class="kinship-tag-btn" data-tag="mother_daughter">🌷 Мать и дочь</button>
+        <button type="button" class="kinship-tag-btn" data-tag="father_son">⚡ Отец и сын</button>
         <button type="button" class="kinship-tag-btn" data-tag="father_daughter">🎀 Отец и дочь</button>
-        <button type="button" class="kinship-tag-btn" data-tag="grandparent">📜 Дедушка и внук</button>
+        <button type="button" class="kinship-tag-btn" data-tag="spouses">💍 Муж и жена</button>
+        <button type="button" class="kinship-tag-btn" data-tag="grandparent">📜 Дедушка / бабушка и внук</button>
         <button type="button" class="kinship-tag-btn" data-tag="adoptive">🧬 Приёмная семья</button>
         <button type="button" class="kinship-tag-btn" data-tag="clans">🏛️ Кланы и династии</button>
+        <button type="button" class="kinship-tag-btn highlight-red" data-tag="hentai">🔞 18+ / Хентай</button>
       </div>
 
       <!-- Loading State -->
@@ -218,6 +233,7 @@
               <option value="movie">🎥 Фильмы</option>
               <option value="ova">💿 OVA</option>
               <option value="ona">🌐 ONA</option>
+              <option value="hentai">🔞 Хентай / 18+</option>
             </select>
           </div>
           <div class="search-input-wrap">

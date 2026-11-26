@@ -20,8 +20,8 @@ const handlers = {
 module.exports = async (req, res) => {
   const fullUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
   
-  // Extract endpoint from rewrite parameter or URL path
-  let endpoint = fullUrl.searchParams.get('__endpoint');
+  // Extract endpoint from rewrite parameter, req.query, or URL path
+  let endpoint = (req.query && req.query.__endpoint) || fullUrl.searchParams.get('__endpoint');
   if (!endpoint) {
     const cleanPath = fullUrl.pathname.replace(/^\/api\/?/, '');
     endpoint = cleanPath.split('/')[0];
