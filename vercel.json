@@ -2,7 +2,7 @@
   "version": 2,
   "functions": {
     "api/index.js": {
-      "includeFiles": "kinship_catalog_data.json",
+      "includeFiles": "{kinship_catalog_data.json,lib/**}",
       "maxDuration": 15
     }
   },

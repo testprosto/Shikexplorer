@@ -1,5 +1,10 @@
 const { URL } = require('url');
 
+// Ensure static dependency tracing bundles the dataset on Vercel
+try {
+  require('../lib/kinship_catalog_data.json');
+} catch (e) {}
+
 const handlers = {
   'acdb-relations': require('../lib/api/acdb-relations'),
   'anime': require('../lib/api/anime'),
